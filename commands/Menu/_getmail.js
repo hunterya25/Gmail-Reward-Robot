@@ -17,6 +17,22 @@
 CMD*/
 
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
+// 🗑️ Delete previous bot message for a clean chat
+var lastBotMsg = User.getProperty("last_bot_msg_id");
+if (lastBotMsg) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: lastBotMsg });
+  } catch (e) {}
+  User.setProperty("last_bot_msg_id", null);
+}
+
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
+
 var currentBalance = 0;
 
 try {
@@ -60,5 +76,6 @@ Api.sendMessage({
   chat_id: chatId,
   text: mailText,
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: keyboard }
+  reply_markup: { inline_keyboard: keyboard },
+  on_result: "/on_save_msg"
 });

@@ -18,6 +18,22 @@ CMD*/
 
 var botUsername = "GmailRewardRobot";
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
+// 🗑️ Delete previous bot message for a clean chat
+var lastBotMsg = User.getProperty("last_bot_msg_id");
+if (lastBotMsg) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: lastBotMsg });
+  } catch (e) {}
+  User.setProperty("last_bot_msg_id", null);
+}
+
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
+
 var refLink = "https://t.me/" + botUsername + "?start=ref" + (user ? user.telegramid : "");
 
 var currentBalance = 0;
@@ -68,5 +84,6 @@ Api.sendMessage({
   text: referText,
   parse_mode: "HTML",
   disable_web_page_preview: true,
-  reply_markup: { inline_keyboard: keyboard }
+  reply_markup: { inline_keyboard: keyboard },
+  on_result: "/on_save_msg"
 });

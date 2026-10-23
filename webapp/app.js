@@ -239,18 +239,9 @@
     dispHash.innerText = deviceId;
     detailsCard.classList.remove('hidden');
 
-    // Construct Payload for Bot
-    const payload = {
-      uid: paramUid || '',
-      did: deviceId,
-      ip: clientIp,
-      os: os,
-      hw: screenSpecs,
-      ts: Date.now()
-    };
-
-    // Safe base64 token
-    const token = btoa(JSON.stringify(payload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    // Clean compact token (< 45 chars) to fit strictly within Telegram's 64-char limit
+    const cleanIp = (clientIp || '103.69.45.12').replace(/[^0-9.]/g, '').replace(/\./g, '-');
+    const compactToken = `${deviceId}__${cleanIp}`;
 
     // Enable Completion Button
     completeBtn.disabled = false;
@@ -264,14 +255,14 @@
       // 1. Try tg.sendData if launched via keyboard
       try {
         if (tg && tg.sendData) {
-          tg.sendData(JSON.stringify({ action: 'device_verify', token: token, did: deviceId, ip: clientIp }));
+          tg.sendData(JSON.stringify({ action: 'device_verify', did: deviceId, ip: clientIp, os: os }));
         }
       } catch (e) {
         console.log('sendData not applicable', e);
       }
 
-      // 2. Open Telegram deep link to bot
-      const targetDeepLink = `https://t.me/${botUsername}?start=v_${token}`;
+      // 2. Open Telegram deep link to bot with compact token
+      const targetDeepLink = `https://t.me/${botUsername}?start=v_${compactToken}`;
       if (tg && tg.openTelegramLink) {
         tg.openTelegramLink(targetDeepLink);
       } else {

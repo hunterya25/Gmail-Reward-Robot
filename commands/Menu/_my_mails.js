@@ -22,6 +22,13 @@ if (request && request.id) {
   Api.answerCallbackQuery({ callback_query_id: request.id });
 }
 
+// 🗑️ Delete previous bot message for a clean chat
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
+
 var userMails = User.getProperty("MyClaimedGmails");
 
 if (!userMails || !Array.isArray(userMails) || userMails.length === 0) {
@@ -34,7 +41,8 @@ if (!userMails || !Array.isArray(userMails) || userMails.length === 0) {
     chat_id: chatId,
     text: emptyText,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: kbd }
+    reply_markup: { inline_keyboard: kbd },
+    on_result: "/on_save_msg"
   });
   return;
 }
@@ -53,11 +61,12 @@ if (userMails.length > 10) {
   msg += "<i>...and " + (userMails.length - 10) + " older accounts.</i>\n\n";
 }
 
-var kbd = [[{ text: "🔙 Return to Menu", callback_data: "/start" }]];
+var kbd = [[{ text: "🔙 Return to Menu", callback_data: "/balance" }]];
 
 Api.sendMessage({
   chat_id: chatId,
   text: msg,
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: kbd }
+  reply_markup: { inline_keyboard: kbd },
+  on_result: "/on_save_msg"
 });

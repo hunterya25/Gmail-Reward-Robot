@@ -22,6 +22,13 @@ if (request && request.id) {
   Api.answerCallbackQuery({ callback_query_id: request.id });
 }
 
+// 🗑️ Delete previous bot message for a clean chat
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
+
 var refList = Bot.getProperty("UserReferrals_" + user.telegramid);
 
 if (!refList || !Array.isArray(refList) || refList.length === 0) {
@@ -34,7 +41,8 @@ if (!refList || !Array.isArray(refList) || refList.length === 0) {
     chat_id: chatId,
     text: emptyMsg,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: kbd }
+    reply_markup: { inline_keyboard: kbd },
+    on_result: "/on_save_msg"
   });
   return;
 }
@@ -58,12 +66,13 @@ msg += "💡 <i>Only verified unique devices credit your balance.</i>";
 
 var kbd = [
   [{ text: "🚀 Invite More Friends", callback_data: "/refer" }],
-  [{ text: "🔙 Return to Menu", callback_data: "/start" }]
+  [{ text: "🔙 Return to Menu", callback_data: "/refer" }]
 ];
 
 Api.sendMessage({
   chat_id: chatId,
   text: msg,
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: kbd }
+  reply_markup: { inline_keyboard: kbd },
+  on_result: "/on_save_msg"
 });

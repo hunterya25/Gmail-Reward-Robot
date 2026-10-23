@@ -16,33 +16,24 @@
   group: 
 CMD*/
 
-// Safe Base64 Decoder (compatible with any JS engine)
-function safeBase64Decode(input) {
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
+// 🗑️ Delete previous bot message for a clean chat interface
+var lastBotMsg = User.getProperty("last_bot_msg_id");
+if (lastBotMsg) {
   try {
-    var str = input.replace(/-/g, "+").replace(/_/g, "/");
-    while (str.length % 4) { str += "="; }
-    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    var output = "";
-    var i = 0;
-    while (i < str.length) {
-      var enc1 = chars.indexOf(str.charAt(i++));
-      var enc2 = chars.indexOf(str.charAt(i++));
-      var enc3 = chars.indexOf(str.charAt(i++));
-      var enc4 = chars.indexOf(str.charAt(i++));
-      var chr1 = (enc1 << 2) | (enc2 >> 4);
-      var chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-      var chr3 = ((enc3 & 3) << 6) | enc4;
-      output += String.fromCharCode(chr1);
-      if (enc3 !== 64 && enc3 !== -1) { output += String.fromCharCode(chr2); }
-      if (enc4 !== 64 && enc4 !== -1) { output += String.fromCharCode(chr3); }
-    }
-    return output;
-  } catch (e) {
-    return null;
-  }
+    Api.deleteMessage({ chat_id: chatId, message_id: lastBotMsg });
+  } catch (e) {}
+  User.setProperty("last_bot_msg_id", null);
 }
 
-// 1. Extract verification token or simulation
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
+
+// 1. Extract verification token
 var rawToken = params ? params.trim() : "";
 if (rawToken.indexOf("v_") === 0) {
   rawToken = rawToken.substring(2);
@@ -54,8 +45,12 @@ if (rawToken.indexOf("v_") === 0) {
 if (!rawToken && request && request.message && request.message.web_app_data) {
   try {
     var webAppData = JSON.parse(request.message.web_app_data.data);
-    if (webAppData && webAppData.token) {
-      rawToken = webAppData.token;
+    if (webAppData) {
+      if (webAppData.did) {
+        rawToken = webAppData.did + "__" + (webAppData.ip || "103.69.45.12");
+      } else if (webAppData.token) {
+        rawToken = webAppData.token;
+      }
     }
   } catch (e) {}
 }
@@ -67,10 +62,34 @@ var deviceOs = "Mobile Device";
 var isSimulation = (!rawToken || rawToken === "sim" || message === "/verify_sim");
 
 if (!isSimulation && rawToken) {
-  var decodedStr = safeBase64Decode(rawToken);
-  if (decodedStr) {
+  // Check if compact format: DID__IP (e.g. DEV_ABC123__103-69-45-12)
+  if (rawToken.indexOf("__") !== -1) {
+    var parts = rawToken.split("__");
+    deviceId = parts[0] || "";
+    if (parts[1]) {
+      clientIp = parts[1].replace(/-/g, ".");
+    }
+  } else {
+    // Legacy base64 decode fallback
     try {
-      var payload = JSON.parse(decodedStr);
+      var str = rawToken.replace(/-/g, "+").replace(/_/g, "/");
+      while (str.length % 4) { str += "="; }
+      var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+      var output = "";
+      var i = 0;
+      while (i < str.length) {
+        var enc1 = chars.indexOf(str.charAt(i++));
+        var enc2 = chars.indexOf(str.charAt(i++));
+        var enc3 = chars.indexOf(str.charAt(i++));
+        var enc4 = chars.indexOf(str.charAt(i++));
+        var chr1 = (enc1 << 2) | (enc2 >> 4);
+        var chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+        var chr3 = ((enc3 & 3) << 6) | enc4;
+        output += String.fromCharCode(chr1);
+        if (enc3 !== 64 && enc3 !== -1) { output += String.fromCharCode(chr2); }
+        if (enc4 !== 64 && enc4 !== -1) { output += String.fromCharCode(chr3); }
+      }
+      var payload = JSON.parse(output);
       deviceId = payload.did || "";
       clientIp = payload.ip || "";
       deviceOs = payload.os || "Mobile Device";
@@ -84,7 +103,11 @@ if (!deviceId) {
   clientIp = "103." + (Math.floor(Math.random() * 200) + 10) + ".45.12";
 }
 
-// 2. 🛡️ ANTI-CHEAT CROSS-CHECK
+if (!clientIp) {
+  clientIp = "103.69.45.12";
+}
+
+// 2. 🛡️ ANTI-CHEAT CROSS-CHECK (Same Device / Duplicate Multi-Account Detection)
 var existingDeviceOwner = Bot.getProperty("DeviceOwner_" + deviceId);
 var isDuplicate = false;
 
@@ -97,14 +120,21 @@ var pendingRef = User.getProperty("pending_referrer");
 
 if (isDuplicate) {
   // ⚠️ VERIFICATION FAILED: DUPLICATE DEVICE DETECTED
+  // User is allowed to use the bot, BUT the referrer receives 0 credit!
   User.setProperty("device_verified", true, "boolean");
   User.setProperty("is_duplicate", true, "boolean");
 
-  var failMsg = "⚠️ <b>Security Alert: Duplicate Device Detected!</b>\n\n" +
-    "Our hardware integrity audit detected that this device is <b>already registered</b> with another Telegram account (ID: <code>" + existingDeviceOwner + "</code>).\n\n" +
-    "❌ <b>Referral Bonus Voided:</b> The user who invited you will <b>NOT</b> receive any referral reward for this second account.\n\n" +
-    "✅ <b>You can still use this bot!</b>\n" +
-    "You have full access to explore the bot and invite your own real friends from unique devices to earn Gmail accounts!";
+  var failMsg = "🚫 <b>Device Verification Failed!</b> ⚠️\n\n" +
+    "📱 <b>Device ID:</b> <code>" + deviceId + "</code>\n" +
+    "🌐 <b>IP Address:</b> <code>" + clientIp + "</code>\n" +
+    "💻 <b>Environment:</b> " + deviceOs + "\n" +
+    "❌ <b>Detection:</b> <b>Duplicate Device / Multi-Account Detected</b>\n" +
+    "👤 <b>Primary Registered Owner:</b> <code>Telegram ID: " + existingDeviceOwner + "</code>\n\n" +
+    "━━━━━━━━━━━━━━━━━━━━\n" +
+    "⛔ <b>Referral Reward Voided:</b>\n" +
+    "The user who referred you will <b>NOT</b> receive any credit or reward for this account because this device was already used previously.\n\n" +
+    "✅ <b>You Can Still Use This Bot!</b>\n" +
+    "You have full access to explore the bot. You can invite your own real friends from their unique devices to earn free Gmail accounts!";
 
   Bot.sendMessage(failMsg, { parse_mode: "HTML" });
 
@@ -113,10 +143,12 @@ if (isDuplicate) {
     var inviterName = user.first_name || "User";
     Api.sendMessage({
       chat_id: pendingRef,
-      text: "⚠️ <b>Referral Verification Alert</b>\n\n" +
+      text: "⚠️ <b>Referral Alert: Duplicate Device Blocked!</b> 🚫\n\n" +
         "👤 <b>User:</b> " + inviterName + " (<code>" + user.telegramid + "</code>)\n" +
-        "❌ <b>Result:</b> <b>Duplicate Device / Second Account Detected!</b>\n\n" +
-        "<i>Our anti-cheat system blocked referral credits for this registration because the device was already used before. Only unique real devices earn rewards!</i>",
+        "📱 <b>Device ID:</b> <code>" + deviceId + "</code>\n" +
+        "❌ <b>Reason:</b> Device already registered to another account (Second Account).\n" +
+        "🎁 <b>Points Credited:</b> <b>0 Credits</b>\n\n" +
+        "<i>Only authentic, unique devices count towards referral earnings!</i>",
       parse_mode: "HTML"
     });
   }
@@ -145,7 +177,7 @@ if (isDuplicate) {
 
   Bot.sendMessage(successMsg, { parse_mode: "HTML" });
 
-  // Process Referral Attribution for genuine user
+  // Process Referral Attribution for genuine unique user
   if (pendingRef && user && pendingRef.toString() !== user.telegramid.toString()) {
     var refId = pendingRef;
     User.setProperty("referrerId", refId, "string");

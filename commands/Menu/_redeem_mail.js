@@ -26,6 +26,13 @@ if (request && request.id) {
   });
 }
 
+// 🗑️ Delete previous bot message for a clean chat
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
+
 var currentBalance = 0;
 var balanceRes = null;
 
@@ -50,7 +57,8 @@ if (currentBalance < 1) {
     chat_id: chatId,
     text: needMoreText,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: kbd }
+    reply_markup: { inline_keyboard: kbd },
+    on_result: "/on_save_msg"
   });
   return;
 }
@@ -69,7 +77,8 @@ if (!gmailStock || !Array.isArray(gmailStock) || gmailStock.length === 0) {
   Api.sendMessage({
     chat_id: chatId,
     text: "⚠️ <b>Stock Currently Depleted!</b>\n\nAll pre-loaded Gmail accounts have been claimed. Our administrators have been alerted to restock immediately.\n\n<i>Note: No credits were deducted from your balance. Please try claiming again shortly!</i>",
-    parse_mode: "HTML"
+    parse_mode: "HTML",
+    on_result: "/on_save_msg"
   });
   return;
 }
@@ -116,5 +125,6 @@ Api.sendMessage({
   chat_id: chatId,
   text: successDispenseText,
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: kbd }
+  reply_markup: { inline_keyboard: kbd },
+  on_result: "/on_save_msg"
 });
