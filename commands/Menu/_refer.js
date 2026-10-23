@@ -63,9 +63,8 @@ try {
 }
 
 var shareText = encodeURIComponent(
-  "🎁 Get Free Fresh & Verified Gmail Accounts on Telegram!\n\n" +
-  "Join @GmailRewardRobot and claim fresh Gmails simply by inviting friends.\n" +
-  "👇 Start now:\n" + refLink
+  "🎁 Claim Free Fresh & Verified Gmail Accounts instantly!\n" +
+  "⚡ 100% Phone-Verified & Ready to Use."
 );
 
 var referText = "👥 <b>Refer & Earn Free Gmail Accounts!</b> 💎\n\n" +
