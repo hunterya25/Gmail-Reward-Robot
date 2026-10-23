@@ -33,6 +33,28 @@ if (request && request.message && request.message.message_id) {
   } catch (e) {}
 }
 
+// 📢 Channel Membership Check: Must remain a member of @BotsByAntares to claim Gmail!
+var isJoined = User.getProperty("channel_joined");
+if (!isJoined) {
+  var channelPrompt = "⚠️ <b>Channel Membership Required!</b>\n\n" +
+    "You must be an active member of <b>@BotsByAntares</b> to claim Gmail accounts!\n\n" +
+    "👉 Please join below and verify:";
+
+  Api.sendMessage({
+    chat_id: chatId,
+    text: channelPrompt,
+    parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "📢 Join @BotsByAntares", url: "https://t.me/BotsByAntares" }],
+        [{ text: "✅ Verify Membership", callback_data: "/check_join" }]
+      ]
+    },
+    on_result: "/on_save_msg"
+  });
+  return;
+}
+
 var currentBalance = 0;
 var balanceRes = null;
 

@@ -161,6 +161,7 @@ if (isDuplicate) {
   if (user && user.telegramid) {
     Bot.setProperty("DeviceOwner_" + deviceId, user.telegramid, "integer");
     Bot.setProperty("IpOwner_" + clientIp, user.telegramid, "integer");
+    Bot.setProperty("UserDevice_" + user.telegramid, deviceId, "string");
   }
 
   User.setProperty("device_verified", true, "boolean");
