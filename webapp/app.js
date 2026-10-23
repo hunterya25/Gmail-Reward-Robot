@@ -1,4 +1,4 @@
-// GmailRewardBot Advanced Anti-Cheat Device & IP Verification Engine
+// GmailRewardBot Ultra-Strict Anti-Fraud Hardware Fingerprint Engine
 (function () {
   'use strict';
 
@@ -39,7 +39,7 @@
   const dispHash = document.getElementById('dispHash');
   const completeBtn = document.getElementById('completeBtn');
 
-  // Fast 64-bit FNV-1a Hash
+  // Fast Deterministic 64-bit FNV-1a Hash
   function hashString(str) {
     let h1 = 0xdeadbeef ^ 0, h2 = 0x41c6ce57 ^ 0;
     for (let i = 0; i < str.length; i++) {
@@ -52,90 +52,18 @@
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
   }
 
-  // 1. AudioContext Fingerprint (Acoustic Waveform Hardware Signature)
-  function getAudioFingerprint() {
-    return new Promise((resolve) => {
-      try {
-        const AudioCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-        if (!AudioCtx) return resolve('no_audio');
-        const context = new AudioCtx(1, 44100, 44100);
-        const osc = context.createOscillator();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(10000, context.currentTime);
-
-        const comp = context.createDynamicsCompressor();
-        comp.threshold.setValueAtTime(-50, context.currentTime);
-        comp.knee.setValueAtTime(40, context.currentTime);
-        comp.ratio.setValueAtTime(12, context.currentTime);
-        comp.reduction.setValueAtTime(-20, context.currentTime);
-        comp.attack.setValueAtTime(0, context.currentTime);
-        comp.release.setValueAtTime(0.25, context.currentTime);
-
-        osc.connect(comp);
-        comp.connect(context.destination);
-        osc.start(0);
-
-        context.startRendering().then((buffer) => {
-          let sum = 0;
-          const data = buffer.getChannelData(0);
-          for (let i = 4500; i < 5000; i++) {
-            sum += Math.abs(data[i]);
-          }
-          resolve(hashString(sum.toString()));
-        }).catch(() => resolve('audio_fb'));
-      } catch (e) {
-        resolve('audio_na');
-      }
-    });
-  }
-
-  // 2. High-Entropy Canvas 2D Fingerprint
-  function getCanvasFingerprint() {
+  // 1. Rock-Solid WebGL GPU Hardware Query (Zero Memory Leak with explicit loseContext)
+  function getWebGLHardware() {
     try {
       const canvas = document.createElement('canvas');
-      canvas.width = 280;
-      canvas.height = 70;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return 'canvas_na';
+      canvas.width = 16;
+      canvas.height = 16;
+      const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false, powerPreference: 'high-performance' }) ||
+                 canvas.getContext('experimental-webgl');
+      if (!gl) return { vendor: 'NoWebGL', renderer: 'NoWebGL', maxTex: 0, precision: 0 };
 
-      ctx.textBaseline = 'top';
-      ctx.font = '14px "Arial", "Segoe UI", sans-serif';
-      ctx.fillStyle = '#0a192f';
-      ctx.fillRect(0, 0, 280, 70);
-
-      const grad = ctx.createLinearGradient(0, 0, 280, 0);
-      grad.addColorStop(0, '#00f2fe');
-      grad.addColorStop(0.5, '#4facfe');
-      grad.addColorStop(1, '#ff0055');
-      ctx.fillStyle = grad;
-      ctx.fillText('GmailRewardBot🔒!@#$%^', 6, 10);
-
-      ctx.font = '12px "Courier New", monospace';
-      ctx.fillStyle = 'rgba(102, 204, 0, 0.85)';
-      ctx.fillText('AntiFraud🛡️<DeviceAudit>', 20, 32);
-
-      ctx.shadowColor = '#00f2fe';
-      ctx.shadowBlur = 4;
-      ctx.strokeStyle = '#ffff00';
-      ctx.beginPath();
-      ctx.arc(230, 35, 18, 0, Math.PI * 2);
-      ctx.stroke();
-
-      return hashString(canvas.toDataURL());
-    } catch (e) {
-      return 'canvas_err';
-    }
-  }
-
-  // 3. WebGL GPU Fingerprint
-  function getWebGLFingerprint() {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) return { vendor: 'no_webgl', renderer: 'no_webgl', hash: 'none' };
-
-      let vendor = 'generic_vendor';
-      let renderer = 'generic_renderer';
+      let vendor = 'GenericVendor';
+      let renderer = 'GenericGPU';
 
       const ext = gl.getExtension('WEBGL_debug_renderer_info');
       if (ext) {
@@ -146,48 +74,92 @@
         renderer = gl.getParameter(gl.RENDERER) || renderer;
       }
 
-      const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 0;
-      const extCount = (gl.getSupportedExtensions() || []).length;
-      const glSig = `${vendor}|${renderer}|${maxTex}|${extCount}`;
+      const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096;
+      let precision = 0;
+      try {
+        const p = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
+        precision = p ? p.precision : 0;
+      } catch (e) {}
+
+      // CRITICAL: Explicitly release WebGL context so Android WebView never runs out of contexts
+      const loseExt = gl.getExtension('WEBGL_lose_context');
+      if (loseExt) {
+        loseExt.loseContext();
+      }
 
       return {
-        vendor,
-        renderer,
-        hash: hashString(glSig)
+        vendor: String(vendor).trim(),
+        renderer: String(renderer).trim(),
+        maxTex: maxTex,
+        precision: precision
       };
     } catch (e) {
-      return { vendor: 'gl_err', renderer: 'gl_err', hash: 'err' };
+      return { vendor: 'GpuErr', renderer: 'GpuErr', maxTex: 0, precision: 0 };
     }
   }
 
-  // 4. Public IP Resolution
-  async function fetchPublicIP() {
+  // 2. Pure Geometric 2D Canvas Sub-pixel Raw Pixel Byte Hash (100% Invariant)
+  // No text font fallbacks, no blur shaders - pure deterministic geometry & alpha blending
+  function getCanvasGeometryHash() {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ip) return data.ip;
-      }
-    } catch (e) {}
+      const canvas = document.createElement('canvas');
+      canvas.width = 100;
+      canvas.height = 50;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return 'canvas_na';
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ip) return data.ip;
-      }
-    } catch (e) {}
+      // Base solid fill
+      ctx.fillStyle = '#ff5722';
+      ctx.fillRect(5, 5, 90, 40);
 
-    return '103.' + (Math.floor(Math.random() * 150) + 10) + '.45.12';
+      // Gradient overlay
+      const grad = ctx.createLinearGradient(0, 0, 100, 50);
+      grad.addColorStop(0, '#00e5ff');
+      grad.addColorStop(0.5, '#7c4dff');
+      grad.addColorStop(1, '#ff1744');
+      ctx.fillStyle = grad;
+      ctx.fillRect(10, 10, 80, 30);
+
+      // Arc with alpha blend
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+      ctx.beginPath();
+      ctx.arc(50, 25, 18, 0, Math.PI * 2, true);
+      ctx.fill();
+
+      // Quadratic curve
+      ctx.strokeStyle = '#00e676';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(15, 40);
+      ctx.quadraticCurveTo(50, 5, 85, 40);
+      ctx.stroke();
+
+      // Read uncompressed raw RGBA byte buffer
+      const imgData = ctx.getImageData(0, 0, 100, 50).data;
+      let h1 = 0x811c9dc5;
+      for (let i = 0; i < imgData.length; i += 4) {
+        const val = imgData[i] | (imgData[i + 1] << 8) | (imgData[i + 2] << 16) | (imgData[i + 3] << 24);
+        h1 ^= val;
+        h1 = Math.imul(h1, 0x01000193);
+      }
+      return (h1 >>> 0).toString(16);
+    } catch (e) {
+      return 'canvas_fail';
+    }
   }
 
-  // 5. Accurate OS & Hardware Environment Detector
+  // 3. Orientation-Independent Screen Architecture
+  function getScreenArchitecture() {
+    const sw = window.screen.width || 360;
+    const sh = window.screen.height || 640;
+    const minDim = Math.min(sw, sh);
+    const maxDim = Math.max(sw, sh);
+    const dpr = Math.round((window.devicePixelRatio || 1) * 100) / 100;
+    const colorDepth = window.screen.colorDepth || 24;
+    return `${minDim}x${maxDim}@${dpr}x${colorDepth}`;
+  }
+
+  // 4. OS & Hardware Environment
   function detectEnvironment() {
     const ua = navigator.userAgent || '';
     const platform = navigator.platform || '';
@@ -222,62 +194,88 @@
     return { osName, osCode, isDesktop, touchPoints };
   }
 
+  // 5. Public IP Fetcher
+  async function fetchPublicIP() {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ip) return data.ip;
+      }
+    } catch (e) {}
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ip) return data.ip;
+      }
+    } catch (e) {}
+
+    return '103.69.45.12';
+  }
+
   // Main Verification Execution
   async function runVerification() {
     const env = detectEnvironment();
-    const screenSpecs = `${window.screen.width}x${window.screen.height}@${window.devicePixelRatio || 1}`;
+    const screenArch = getScreenArchitecture();
     const cores = navigator.hardwareConcurrency || 4;
-    const canvasHash = getCanvasFingerprint();
-    const webgl = getWebGLFingerprint();
+    const canvasHash = getCanvasGeometryHash();
+    const webgl = getWebGLHardware();
 
-    // Step 1: Resolving Network & IP (0% -> 25%)
+    // Pure invariant hardware signature:
+    // Silicon GPU + Canvas Geometry + Screen Dimension + CPU Cores + Touch Controller + OS Code
+    const hardwareSignature = `DEVHW_${webgl.vendor}_${webgl.renderer}_${webgl.maxTex}_${webgl.precision}_${canvasHash}_${screenArch}_${cores}_${env.touchPoints}_${env.osCode}`;
+    const deviceId = 'DEV_' + hashString(hardwareSignature).toUpperCase();
+
+    // Step 1: Resolving Network & IP (0% -> 30%)
     setAuditState(auditIp, 'running');
-    progressBar.style.width = '25%';
-    progressPercent.innerText = '25%';
-    progressStep.innerText = 'Resolving IP Address & Subnet...';
+    progressBar.style.width = '30%';
+    progressPercent.innerText = '30%';
+    progressStep.innerText = 'Auditing IP Address & Network Subnet...';
 
     const clientIp = await fetchPublicIP();
 
     setAuditState(auditIp, 'checked');
     auditIpMeta.innerText = `IP: ${clientIp} (${env.osName})`;
 
-    // Step 2: Audio & GPU Hardware Audit (25% -> 55%)
-    await delay(600);
+    // Step 2: Silicon GPU & Canvas Audit (30% -> 60%)
+    await delay(500);
     setAuditState(auditHardware, 'running');
-    progressBar.style.width = '55%';
-    progressPercent.innerText = '55%';
-    progressStep.innerText = 'Auditing GPU, Audio & Canvas Signature...';
-
-    const audioHash = await getAudioFingerprint();
-
-    // Compute Pure Physical Hardware Fingerprint
-    // Invariant across different Telegram accounts on the exact same physical machine/phone
-    const hardwareComposite = `HW_${canvasHash}_${webgl.hash}_${audioHash}_${screenSpecs}_${cores}_${env.touchPoints}_${env.osCode}`;
-    const deviceId = 'DEV_' + hashString(hardwareComposite).toUpperCase();
+    progressBar.style.width = '60%';
+    progressPercent.innerText = '60%';
+    progressStep.innerText = 'Auditing GPU Silicon & Canvas Pipeline...';
 
     await delay(600);
     setAuditState(auditHardware, 'checked');
-    auditHardwareMeta.innerText = `GPU: ${webgl.renderer.substring(0, 18)}... | Cores: ${cores}`;
+    const gpuDisplay = webgl.renderer.length > 20 ? (webgl.renderer.substring(0, 18) + '...') : webgl.renderer;
+    auditHardwareMeta.innerText = `GPU: ${gpuDisplay} | Cores: ${cores}`;
 
-    // Step 3: Anti-Duplicate Cross-Reference (55% -> 80%)
+    // Step 3: Hardware Registry Anti-Cheat Check (60% -> 85%)
     setAuditState(auditDevice, 'running');
-    progressBar.style.width = '80%';
-    progressPercent.innerText = '80%';
-    progressStep.innerText = 'Cross-Referencing Hardware Registry...';
+    progressBar.style.width = '85%';
+    progressPercent.innerText = '85%';
+    progressStep.innerText = 'Querying Hardware Registry for Duplicates...';
 
-    await delay(700);
+    await delay(600);
     setAuditState(auditDevice, 'checked');
-    auditDeviceMeta.innerText = `Device Signature: ${deviceId.substring(0, 14)}...`;
+    auditDeviceMeta.innerText = `Signature: ${deviceId}`;
 
-    // Step 4: Security Verification Finalize (80% -> 100%)
+    // Step 4: Finalize Verification (85% -> 100%)
     setAuditState(auditIntegrity, 'running');
     progressBar.style.width = '100%';
     progressPercent.innerText = '100%';
     progressStep.innerText = 'Anti-Fraud Analysis Complete!';
 
-    await delay(500);
+    await delay(400);
     setAuditState(auditIntegrity, 'checked');
-    auditIntegrityMeta.innerText = 'Hardware & Network Signature Verified ✓';
+    auditIntegrityMeta.innerText = 'Unique Physical Device Signature Verified ✓';
 
     // Update UI State
     progressBar.classList.add('success');
@@ -286,15 +284,14 @@
     statusText.innerText = '✓ Device Integrity Passed';
     shieldIcon.classList.add('verified');
 
-    // Populate Verified Grid
+    // Populate Details Card
     dispIp.innerText = clientIp;
     dispOs.innerText = `${env.osName} (${env.isDesktop ? 'Computer' : 'Mobile'})`;
-    dispHardware.innerText = `${screenSpecs} (${cores} Cores)`;
+    dispHardware.innerText = `${screenArch.split('@')[0]} (${cores} Cores)`;
     dispHash.innerText = deviceId;
     detailsCard.classList.remove('hidden');
 
-    // Compact token (< 45 chars) to fit strictly within Telegram's 64-char deep link limit:
-    // Format: DEV_XXXXX__IP-WITH-HYPHENS__OSCODE (e.g. DEV_104E56E8C8B1__49-43-160-185__W)
+    // Compact token (< 45 chars): DEV_XXXXX__IP-WITH-HYPHENS__OSCODE
     const cleanIp = (clientIp || '103.69.45.12').replace(/[^0-9.]/g, '').replace(/\./g, '-');
     const compactToken = `${deviceId}__${cleanIp}__${env.osCode}`;
 
@@ -302,12 +299,10 @@
     completeBtn.disabled = false;
     completeBtn.innerHTML = '<span>✅ Finalize & Unlock Bot</span>';
 
-    // Completion Handler
     completeBtn.onclick = function () {
       completeBtn.disabled = true;
       completeBtn.innerHTML = '<span>🔄 Redirecting to Telegram...</span>';
 
-      // 1. Try sending directly via WebApp data if supported
       try {
         if (tg && tg.sendData) {
           tg.sendData(JSON.stringify({
@@ -320,7 +315,6 @@
         }
       } catch (e) {}
 
-      // 2. Open Telegram deep link to bot with compact verification token
       const targetDeepLink = `https://t.me/${botUsername}?start=v_${compactToken}`;
       if (tg && tg.openTelegramLink) {
         tg.openTelegramLink(targetDeepLink);

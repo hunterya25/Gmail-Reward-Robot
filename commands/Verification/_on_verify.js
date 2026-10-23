@@ -131,13 +131,24 @@ var existingDeviceOwner = Bot.getProperty("DeviceOwner_" + deviceId);
 var existingIpOwner = Bot.getProperty("IpOwner_" + clientIp);
 var pendingRef = User.getProperty("pending_referrer");
 
+function getSubnet(ip) {
+  if (!ip || ip.indexOf(".") === -1) return "";
+  var parts = ip.split(".");
+  if (parts.length >= 3) {
+    return parts[0] + "." + parts[1] + "." + parts[2];
+  }
+  return "";
+}
+
+var clientSubnet = getSubnet(clientIp);
+
 var isDuplicate = false;
 var detectionReason = "";
 var primaryOwner = "";
 
 if (existingDeviceOwner && user && existingDeviceOwner.toString() !== user.telegramid.toString()) {
   isDuplicate = true;
-  detectionReason = "Duplicate Device / Multi-Account Detected";
+  detectionReason = "Duplicate Device / Multi-Account Detected (Same Physical Hardware)";
   primaryOwner = existingDeviceOwner;
 } else if (existingIpOwner && user && existingIpOwner.toString() !== user.telegramid.toString()) {
   isDuplicate = true;
@@ -146,22 +157,32 @@ if (existingDeviceOwner && user && existingDeviceOwner.toString() !== user.teleg
 } else if (pendingRef && user) {
   var referrerIp = Bot.getProperty("UserIp_" + pendingRef);
   var referrerDevice = Bot.getProperty("UserDevice_" + pendingRef);
-  if (referrerIp && referrerIp === clientIp) {
+  var referrerSubnet = getSubnet(referrerIp);
+
+  if (referrerDevice && referrerDevice === deviceId) {
     isDuplicate = true;
-    detectionReason = "Self-Referral Blocked (Same IP Network as Referrer)";
+    detectionReason = "Self-Referral Blocked (Same Physical Device as Referrer)";
     primaryOwner = pendingRef;
-  } else if (referrerDevice && referrerDevice === deviceId) {
+  } else if (referrerIp && referrerIp === clientIp) {
     isDuplicate = true;
-    detectionReason = "Self-Referral Blocked (Same Device as Referrer)";
+    detectionReason = "Self-Referral Blocked (Exact Same IP Network as Referrer)";
+    primaryOwner = pendingRef;
+  } else if (referrerSubnet && clientSubnet && referrerSubnet === clientSubnet) {
+    isDuplicate = true;
+    detectionReason = "Self-Referral Blocked (Same Cellular Subnet / Flight Mode Multi-Account: " + clientSubnet + ".*)";
     primaryOwner = pendingRef;
   }
 }
 
 // 3. Handle Duplicate / Second Account vs Genuine Device
 if (isDuplicate) {
-  // ⚠️ VERIFICATION FAILED: DUPLICATE HARDWARE OR NETWORK DETECTED
   User.setProperty("device_verified", true, "boolean");
   User.setProperty("is_duplicate", true, "boolean");
+
+  if (user && user.telegramid) {
+    Bot.setProperty("UserDevice_" + user.telegramid, deviceId, "string");
+    Bot.setProperty("UserIp_" + user.telegramid, clientIp, "string");
+  }
 
   var failMsg = "🚫 <b>Device & Network Verification Failed!</b> ⚠️\n\n" +
     "📱 <b>Device ID:</b> <code>" + deviceId + "</code>\n" +
