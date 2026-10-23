@@ -37,8 +37,21 @@ if (!codeInput && rawMsg.indexOf("/redeem_promo ") === 0) {
   codeInput = rawMsg.replace("/redeem_promo ", "").trim().toUpperCase();
 }
 
-// If no code was provided (user clicked the button or typed /promo)
-if (!codeInput) {
+// Check if user clicked menu button or typed /promo without a specific code
+var isMenuClick = (!codeInput ||
+  codeInput === "PROMO CODE" ||
+  codeInput === "PROMO" ||
+  codeInput === "CODE" ||
+  codeInput === "/PROMO" ||
+  codeInput === "/REDEEM_PROMO" ||
+  codeInput.indexOf("🎟") !== -1 ||
+  codeInput.indexOf("🎁") !== -1 ||
+  rawMsg === "🎟️ Promo Code" ||
+  rawMsg === "🎟 Promo Code" ||
+  rawMsg === "Promo Code"
+);
+
+if (isMenuClick) {
   var infoMsg = "🎟️ <b>Redeem Promo Code</b> 🎁\n\n" +
     "🌟 <i>Have an official promotional gift code? Claim instant bonus Gmail credits!</i>\n\n" +
     "👇 <b>How to redeem:</b>\n" +

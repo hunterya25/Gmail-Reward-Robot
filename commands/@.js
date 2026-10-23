@@ -82,7 +82,11 @@ if (user && user.telegramid) {
         }
       }
       Bot.setProperty("SuspendedUsersList", cleanSList, "json");
-      // Access is restored immediately! Flow continues to menu or target command.
+      // Access is restored immediately! Send celebratory notification to user.
+      var unbanNotice = "🎉 <b>Account Suspension Period Completed!</b> 🔓\n\n" +
+        "Aapka temporary suspension period pura ho chuka hai aur aapka account <b>automatically unsuspend</b> kar diya gaya hai!\n\n" +
+        "✅ <b>Status:</b> All bot features and reward privileges restored. Welcome back!";
+      Bot.sendMessage(unbanNotice, { parse_mode: "HTML" });
     } else {
       // ⛔ Still Suspended: Show remaining time in IST and block
       var remMs = untilMs - nowMs;

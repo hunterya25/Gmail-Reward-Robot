@@ -151,6 +151,13 @@ if (!exists) {
   Bot.setProperty("SuspendedUsersList", suspList, "json");
 }
 
+// Schedule automatic unsuspend worker when duration completes
+var durationSec = Math.round(totalMs / 1000);
+Bot.run({
+  command: "/on_auto_unsuspend " + targetId,
+  run_after: durationSec
+});
+
 var confirmMsg = "⏳ <b>User Suspended Successfully!</b>\n\n" +
   "• Target ID: <code>" + targetId + "</code>\n" +
   "• Duration: <b>" + durationLabel + "</b>\n" +
