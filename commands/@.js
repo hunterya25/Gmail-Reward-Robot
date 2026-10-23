@@ -165,15 +165,80 @@ if (user && user.telegramid) {
     }
   }
 
-  // 4. Standalone Promo Code Auto-Detection
-  if (message && message.indexOf("/") !== 0 && message.length <= 30) {
+  // 4. Standalone Promo Code Auto-Detection & Direct Input
+  var isWaitingPromo = User.getProperty("waiting_for_promo");
+
+  if (message) {
     var rawText = message.trim();
-    var isMenuBtn = (rawText.indexOf("Balance") !== -1 || rawText.indexOf("GetMail") !== -1 || rawText.indexOf("Refer") !== -1 || rawText.indexOf("Custom") !== -1 || rawText.indexOf("Stock") !== -1 || rawText.indexOf("Leaderboard") !== -1 || rawText.indexOf("Device") !== -1 || rawText.indexOf("Promo") !== -1 || rawText.indexOf("Support") !== -1 || rawText.indexOf("FAQ") !== -1);
-    if (!isMenuBtn) {
-      var possibleCode = rawText.toUpperCase();
-      var promoList = Bot.getProperty("PromoCodesList") || [];
-      for (var pi = 0; pi < promoList.length; pi++) {
-        if (promoList[pi] && promoList[pi].code === possibleCode) {
+    var isCmd = (rawText.indexOf("/") === 0);
+    var isMenuBtn = (
+      rawText.indexOf("Balance") !== -1 ||
+      rawText.indexOf("GetMail") !== -1 ||
+      rawText.indexOf("Refer") !== -1 ||
+      rawText.indexOf("Custom") !== -1 ||
+      rawText.indexOf("Stock") !== -1 ||
+      rawText.indexOf("Leaderboard") !== -1 ||
+      rawText.indexOf("Device") !== -1 ||
+      rawText.indexOf("Promo") !== -1 ||
+      rawText.indexOf("Support") !== -1 ||
+      rawText.indexOf("FAQ") !== -1 ||
+      rawText.indexOf("Back") !== -1 ||
+      rawText.indexOf("Home") !== -1 ||
+      rawText.indexOf("Menu") !== -1 ||
+      rawText.indexOf("💰") !== -1 ||
+      rawText.indexOf("📧") !== -1 ||
+      rawText.indexOf("👥") !== -1 ||
+      rawText.indexOf("🎯") !== -1 ||
+      rawText.indexOf("📦") !== -1 ||
+      rawText.indexOf("🏆") !== -1 ||
+      rawText.indexOf("🛡") !== -1 ||
+      rawText.indexOf("💬") !== -1 ||
+      rawText.indexOf("ℹ") !== -1 ||
+      rawText.indexOf("🎟") !== -1
+    );
+
+    if (isCmd || isMenuBtn) {
+      if (isWaitingPromo) {
+        User.setProperty("waiting_for_promo", false, "boolean");
+      }
+    } else {
+      // Direct "promo <code>" command without slash (e.g. "promo BONUS1")
+      if (rawText.toLowerCase().indexOf("promo ") === 0) {
+        User.setProperty("waiting_for_promo", false, "boolean");
+        var directCode = rawText.substring(6).trim();
+        if (directCode) {
+          Bot.runCommand("/promo " + directCode);
+          return;
+        }
+      }
+
+      // User clicked 🎟️ Promo Code and sent their code directly in chat!
+      // This forwards valid, invalid, expired, and maxed-out codes to /promo for full evaluation
+      if (isWaitingPromo && rawText) {
+        User.setProperty("waiting_for_promo", false, "boolean");
+        Bot.runCommand("/promo " + rawText);
+        return;
+      }
+
+      // Standalone code sent directly without clicking the promo button
+      if (rawText.length <= 30) {
+        var possibleCode = rawText.toUpperCase();
+        var promoList = Bot.getProperty("PromoCodesList") || [];
+        var isKnownCode = false;
+        for (var pi = 0; pi < promoList.length; pi++) {
+          if (promoList[pi] && promoList[pi].code === possibleCode) {
+            isKnownCode = true;
+            break;
+          }
+        }
+        var isPromoPattern = (
+          possibleCode.indexOf("BONUS") === 0 ||
+          possibleCode.indexOf("GIFT") === 0 ||
+          possibleCode.indexOf("PROMO") === 0 ||
+          possibleCode.indexOf("REWARD") === 0
+        );
+
+        if (isKnownCode || isPromoPattern) {
           Bot.runCommand("/promo " + possibleCode);
           return;
         }

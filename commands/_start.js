@@ -129,6 +129,9 @@ try {
     return;
   }
 
+  // Clear waiting_for_promo flag on start/menu
+  User.setProperty("waiting_for_promo", false, "boolean");
+
   // 🗑️ Delete previous bot message for a clean chat
   var lastBotMsg = User.getProperty("last_bot_msg_id");
   if (lastBotMsg) {

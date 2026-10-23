@@ -52,6 +52,7 @@ var isMenuClick = (!codeInput ||
 );
 
 if (isMenuClick) {
+  User.setProperty("waiting_for_promo", true, "boolean");
   var infoMsg = "🎟️ <b>Redeem Promo Code</b> 🎁\n\n" +
     "🌟 <i>Have an official promotional gift code? Claim instant bonus Gmail credits!</i>\n\n" +
     "👇 <b>How to redeem:</b>\n" +
@@ -74,6 +75,7 @@ if (isMenuClick) {
 }
 
 // 3. Process the promo code redemption
+User.setProperty("waiting_for_promo", false, "boolean");
 var promoList = Bot.getProperty("PromoCodesList") || [];
 var promoObj = null;
 
