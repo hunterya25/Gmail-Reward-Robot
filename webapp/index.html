@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GmailRewardBot - Device & IP Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div class="mesh-bg"></div>
+
+  <main class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="bot-badge">
+        <span class="pulse-dot"></span>
+        <span class="bot-name">@GmailRewardRobot</span>
+      </div>
+      <h1 class="title">Device & IP Verification</h1>
+      <p class="subtitle">Strict Anti-Cheat & Multi-Account Protection</p>
+    </header>
+
+    <!-- Radar / Scanner Card -->
+    <div class="scanner-card">
+      <div class="radar-box">
+        <div class="radar-circle circle-1"></div>
+        <div class="radar-circle circle-2"></div>
+        <div class="radar-circle circle-3"></div>
+        <div class="radar-sweep"></div>
+        <div class="shield-center" id="shieldIcon">
+          <svg viewBox="0 0 24 24" fill="none" class="shield-svg" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="status-badge" id="statusBadge">
+        <span class="spinner" id="statusSpinner"></span>
+        <span id="statusText">Scanning Device Integrity...</span>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="progress-info">
+        <span id="progressStep">Initializing Secure Sandbox...</span>
+        <span id="progressPercent">0%</span>
+      </div>
+    </div>
+
+    <!-- Live Audit Checklist -->
+    <div class="audit-card">
+      <h3 class="card-label">SECURITY AUDIT PROTOCOL</h3>
+
+      <div class="audit-item" id="auditIp">
+        <div class="audit-icon pending"></div>
+        <div class="audit-content">
+          <div class="audit-title">Public IP & Geolocation</div>
+          <div class="audit-meta" id="auditIpMeta">Detecting ISP & subnet...</div>
+        </div>
+      </div>
+
+      <div class="audit-item" id="auditHardware">
+        <div class="audit-icon pending"></div>
+        <div class="audit-content">
+          <div class="audit-title">Hardware & GPU Fingerprint</div>
+          <div class="audit-meta" id="auditHardwareMeta">Querying WebGL & canvas...</div>
+        </div>
+      </div>
+
+      <div class="audit-item" id="auditDevice">
+        <div class="audit-icon pending"></div>
+        <div class="audit-content">
+          <div class="audit-title">Unique Device Identity</div>
+          <div class="audit-meta" id="auditDeviceMeta">Cross-referencing device registry...</div>
+        </div>
+      </div>
+
+      <div class="audit-item" id="auditIntegrity">
+        <div class="audit-icon pending"></div>
+        <div class="audit-content">
+          <div class="audit-title">Anti-Duplicate Validation</div>
+          <div class="audit-meta" id="auditIntegrityMeta">Checking for multi-accounts...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verified Device Summary Card (revealed after scan) -->
+    <div class="details-card hidden" id="detailsCard">
+      <div class="details-header">
+        <span class="verified-tag">✓ VERIFIED UNIQUE</span>
+        <span class="timestamp" id="verifyTime">Just now</span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-cell">
+          <span class="cell-label">IP Address</span>
+          <span class="cell-val" id="dispIp">--</span>
+        </div>
+        <div class="info-cell">
+          <span class="cell-label">Device OS</span>
+          <span class="cell-val" id="dispOs">--</span>
+        </div>
+        <div class="info-cell">
+          <span class="cell-label">Screen & Cores</span>
+          <span class="cell-val" id="dispHardware">--</span>
+        </div>
+        <div class="info-cell">
+          <span class="cell-label">Device Hash</span>
+          <span class="cell-val mono" id="dispHash">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Section -->
+    <div class="action-card">
+      <button class="btn btn-primary" id="completeBtn" disabled>
+        <span class="btn-text">Verifying Device (2-3s)...</span>
+      </button>
+
+      <p class="footnote">
+        🔒 Hardware hashes are encrypted and used solely to prevent duplicate multi-accounts on the same device.
+      </p>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

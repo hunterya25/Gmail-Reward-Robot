@@ -1,0 +1,58 @@
+/*CMD
+  command: 👥 Refer & Earn
+  help: 
+  need_reply: false
+  auto_retry_time: 
+  folder: Menu
+
+  <<ANSWER
+
+  ANSWER
+
+  <<KEYBOARD
+
+  KEYBOARD
+  aliases: Refer Earn, Refer & Earn, 🤝 Refer & Earn, /refer
+  group: 
+CMD*/
+
+var botUsername = "GmailRewardRobot";
+var refLink = "https://t.me/" + botUsername + "?start=ref" + user.telegramid;
+
+var refRes = Libs.ResourcesLib.userRes("total_referrals");
+var totalRefs = refRes ? refRes.value() : 0;
+
+var balanceRes = Libs.ResourcesLib.userRes("balance");
+var currentBalance = balanceRes ? balanceRes.value() : 0;
+
+var shareText = encodeURIComponent(
+  "🎁 Get Free Fresh & Verified Gmail Accounts on Telegram!\n\n" +
+  "Join @GmailRewardRobot and claim fresh Gmails simply by inviting friends.\n" +
+  "👇 Start now:\n" + refLink
+);
+
+var referText = "👥 <b>Refer & Earn Free Gmail Accounts!</b> 💎\n\n" +
+  "Invite friends to @GmailRewardRobot and receive <b>1 Fresh Gmail Credit</b> for every verified friend!\n\n" +
+  "🔗 <b>Your Exclusive Referral Link:</b>\n" +
+  "<code>" + refLink + "</code>\n\n" +
+  "━━━━━━━━━━━━━━━━━━━━\n" +
+  "📊 <b>Your Referral Performance:</b>\n" +
+  "• 👥 <b>Verified Referrals:</b> <b>" + totalRefs + "</b>\n" +
+  "• 💰 <b>Current Balance:</b> <b>" + currentBalance + " Credits</b>\n\n" +
+  "🛡️ <b>Strict Anti-Fraud System:</b>\n" +
+  "• 🚫 <i>Multi-accounting on the same device is strictly blocked.</i>\n" +
+  "• 📱 <i>Each friend must complete the 2-3s device & IP integrity check.</i>\n" +
+  "• ❌ <i>Duplicate devices give 0 referral credit. Only genuine friends count!</i>\n\n" +
+  "👇 <i>Tap below to share your link with friends or groups:</i>";
+
+var keyboard = [
+  [{ text: "🚀 Share to Friends / Groups", url: "https://t.me/share/url?url=" + refLink + "&text=" + shareText }],
+  [{ text: "📋 View My Referral History", callback_data: "/my_referrals" }]
+];
+
+Api.sendMessage({
+  text: referText,
+  parse_mode: "html",
+  disable_web_page_preview: true,
+  reply_markup: { inline_keyboard: keyboard }
+});
