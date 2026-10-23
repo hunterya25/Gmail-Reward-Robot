@@ -160,4 +160,20 @@ if (user && user.telegramid) {
       return;
     }
   }
+
+  // 4. Standalone Promo Code Auto-Detection
+  if (message && message.indexOf("/") !== 0 && message.length <= 30) {
+    var rawText = message.trim();
+    var isMenuBtn = (rawText.indexOf("Balance") !== -1 || rawText.indexOf("GetMail") !== -1 || rawText.indexOf("Refer") !== -1 || rawText.indexOf("Custom") !== -1 || rawText.indexOf("Stock") !== -1 || rawText.indexOf("Leaderboard") !== -1 || rawText.indexOf("Device") !== -1 || rawText.indexOf("Promo") !== -1 || rawText.indexOf("Support") !== -1 || rawText.indexOf("FAQ") !== -1);
+    if (!isMenuBtn) {
+      var possibleCode = rawText.toUpperCase();
+      var promoList = Bot.getProperty("PromoCodesList") || [];
+      for (var pi = 0; pi < promoList.length; pi++) {
+        if (promoList[pi] && promoList[pi].code === possibleCode) {
+          Bot.runCommand("/promo " + possibleCode);
+          return;
+        }
+      }
+    }
+  }
 }

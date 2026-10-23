@@ -1,7 +1,7 @@
 /*CMD
   command: /promo
   help: 
-  need_reply: true
+  need_reply: false
   auto_retry_time: 
   folder: Menu
 
@@ -26,46 +26,41 @@ if (Bot.getProperty("maintenance_mode") && !isAdm) {
   return;
 }
 
-// 2. Determine User Input
-var rawMsg = message ? message.trim() : "";
+// 2. Extract code input
 var codeInput = params ? params.trim().toUpperCase() : "";
+var rawMsg = message ? message.trim() : "";
 
 if (!codeInput && rawMsg.indexOf("/promo ") === 0) {
   codeInput = rawMsg.replace("/promo ", "").trim().toUpperCase();
 }
+if (!codeInput && rawMsg.indexOf("/redeem_promo ") === 0) {
+  codeInput = rawMsg.replace("/redeem_promo ", "").trim().toUpperCase();
+}
 
-// Check if message is a button click or empty (not a promo code yet)
-var isInitialPrompt = (!codeInput && (!rawMsg || rawMsg === "/promo" || rawMsg === "/redeem_promo" || rawMsg.indexOf("Promo Code") !== -1 || rawMsg.indexOf("🎟") !== -1 || rawMsg.indexOf("🎁") !== -1));
-
-if (isInitialPrompt) {
-  var promptText = "🎟️ <b>Redeem Promo Code</b> 🎁\n\n" +
-    "🌟 <i>Have an official promotional gift code? Enter it below to claim instant bonus Gmail credits!</i>\n\n" +
-    "👇 <b>Type or paste your promo code now:</b>";
+// If no code was provided (user clicked the button or typed /promo)
+if (!codeInput) {
+  var infoMsg = "🎟️ <b>Redeem Promo Code</b> 🎁\n\n" +
+    "🌟 <i>Have an official promotional gift code? Claim instant bonus Gmail credits!</i>\n\n" +
+    "👇 <b>How to redeem:</b>\n" +
+    "Send command: <code>/promo YOUR_CODE</code>\n" +
+    "<i>(Or simply send your promo code directly in chat!)</i>\n\n" +
+    "━━━━━━━━━━━━━━━━━━━━\n" +
+    "<i>💡 Example:</i> <code>/promo BONUS5</code>";
 
   var kbd = [
-    [{ text: "❌ Cancel", callback_data: "/start" }]
+    [{ text: "🏠 Main Menu", callback_data: "/start" }]
   ];
 
   Api.sendMessage({
     chat_id: chatId,
-    text: promptText,
+    text: infoMsg,
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: kbd }
   });
   return;
 }
 
-// User sent an input code!
-if (!codeInput) {
-  codeInput = rawMsg.toUpperCase();
-}
-
-// Check if user tapped another menu button or command
-if (codeInput.indexOf("/") === 0 || codeInput.indexOf("💰") === 0 || codeInput.indexOf("📧") === 0 || codeInput.indexOf("👥") === 0 || codeInput.indexOf("🎯") === 0 || codeInput.indexOf("📦") === 0 || codeInput.indexOf("🏆") === 0 || codeInput.indexOf("🛡") === 0 || codeInput.indexOf("💬") === 0 || codeInput.indexOf("ℹ") === 0) {
-  return;
-}
-
-// Process Promo Code
+// 3. Process the promo code redemption
 var promoList = Bot.getProperty("PromoCodesList") || [];
 var promoObj = null;
 
