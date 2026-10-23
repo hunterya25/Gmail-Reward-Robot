@@ -250,7 +250,7 @@ try {
     "👇 <b>Choose an action from the menu below:</b>";
 
   Bot.sendKeyboard(
-    "💰 Balance,📧 GetMail\n👥 Refer & Earn,📜 My Mails\n🎯 Custom Order,📦 Live Stock\n🏆 Leaderboard,🛡️ My Device\n🎟️ Promo Code,💬 Support\nℹ️ Rules & FAQ",
+    "💰 Balance,📧 GetMail\n👥 Refer & Earn,🎟️ Promo Code\n🎯 Custom Order,📦 Live Stock\n🏆 Leaderboard,🛡️ My Device\n💬 Support,ℹ️ Rules & FAQ",
     dashboardText
   );
 

@@ -12,11 +12,15 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: 🎟️ Promo Code, Promo Code, /redeem_promo
+  aliases: 🎟️ Promo Code, Promo Code, /redeem_promo, 🎁 Promo Code, Promo
   group: 
 CMD*/
 
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
+if (User.getProperty("_is_gate_blocked")) {
+  return;
+}
 
 // Maintenance Mode Check
 var adm = Bot.getProperty("adminID");
