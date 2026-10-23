@@ -49,11 +49,13 @@ var adminPanelText = "👑 <b>GmailRewardBot Admin Dashboard</b> 🛠️\n\n" +
   "• 🌐 <code>/set_webapp https://...</code> — Update the Verification Mini App URL\n" +
   "• 📦 <code>/stock</code> — View remaining inventory details\n" +
   "• 🔄 <code>/clear_device DEV_ID</code> — Unbind a device for testing\n" +
+  "• ⚠️ <code>/reset_all</code> — Wipe all devices, IPs & user data to test from scratch\n" +
   "• 📢 <code>/broadcast &lt;message&gt;</code> — Send message to all users";
 
 var kbd = [
   [{ text: "➕ Add Gmails to Stock", callback_data: "/add_gmail_prompt" }],
-  [{ text: "📦 Inspect Stock (" + stockCount + ")", callback_data: "/stock" }]
+  [{ text: "📦 Inspect Stock (" + stockCount + ")", callback_data: "/stock" }],
+  [{ text: "⚠️ Reset All Bot Data", callback_data: "/reset_all" }]
 ];
 
 Api.sendMessage({

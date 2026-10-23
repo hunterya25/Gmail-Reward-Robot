@@ -46,10 +46,13 @@ if (!rawToken && request && request.message && request.message.web_app_data) {
   try {
     var webAppData = JSON.parse(request.message.web_app_data.data);
     if (webAppData) {
-      if (webAppData.did) {
-        rawToken = webAppData.did + "__" + (webAppData.ip || "103.69.45.12");
-      } else if (webAppData.token) {
+      if (webAppData.token) {
         rawToken = webAppData.token;
+      } else if (webAppData.did) {
+        rawToken = webAppData.did + "__" + (webAppData.ip || "103.69.45.12");
+        if (webAppData.os) {
+          rawToken += "__" + webAppData.os;
+        }
       }
     }
   } catch (e) {}
@@ -57,20 +60,36 @@ if (!rawToken && request && request.message && request.message.web_app_data) {
 
 var deviceId = "";
 var clientIp = "";
-var deviceOs = "Mobile Device";
+var deviceOs = "Mobile Device 📱";
 
 var isSimulation = (!rawToken || rawToken === "sim" || message === "/verify_sim");
 
 if (!isSimulation && rawToken) {
-  // Check if compact format: DID__IP (e.g. DEV_ABC123__103-69-45-12)
+  // Check compact format: DID__IP__OS (e.g. DEV_ABC123__49-43-160-185__W)
   if (rawToken.indexOf("__") !== -1) {
     var parts = rawToken.split("__");
     deviceId = parts[0] || "";
     if (parts[1]) {
       clientIp = parts[1].replace(/-/g, ".");
     }
+    if (parts[2]) {
+      var osCode = parts[2].trim().toUpperCase();
+      if (osCode === "W" || osCode === "WINDOWS") {
+        deviceOs = "Windows PC 💻";
+      } else if (osCode === "M" || osCode === "MAC" || osCode === "MACOS") {
+        deviceOs = "macOS Computer 🖥️";
+      } else if (osCode === "L" || osCode === "LINUX") {
+        deviceOs = "Linux PC 🐧";
+      } else if (osCode === "I" || osCode === "IOS") {
+        deviceOs = "iOS Apple Device 🍏";
+      } else if (osCode === "A" || osCode === "ANDROID") {
+        deviceOs = "Android Mobile 📱";
+      } else {
+        deviceOs = parts[2];
+      }
+    }
   } else {
-    // Legacy base64 decode fallback
+    // Base64 JSON fallback
     try {
       var str = rawToken.replace(/-/g, "+").replace(/_/g, "/");
       while (str.length % 4) { str += "="; }
@@ -92,7 +111,7 @@ if (!isSimulation && rawToken) {
       var payload = JSON.parse(output);
       deviceId = payload.did || "";
       clientIp = payload.ip || "";
-      deviceOs = payload.os || "Mobile Device";
+      deviceOs = payload.os || "Mobile Device 📱";
     } catch (e) {}
   }
 }
@@ -107,48 +126,70 @@ if (!clientIp) {
   clientIp = "103.69.45.12";
 }
 
-// 2. 🛡️ ANTI-CHEAT CROSS-CHECK (Same Device / Duplicate Multi-Account Detection)
+// 2. 🛡️ ADVANCED ANTI-CHEAT & MULTI-ACCOUNT DETECTION
 var existingDeviceOwner = Bot.getProperty("DeviceOwner_" + deviceId);
+var existingIpOwner = Bot.getProperty("IpOwner_" + clientIp);
+var pendingRef = User.getProperty("pending_referrer");
+
 var isDuplicate = false;
+var detectionReason = "";
+var primaryOwner = "";
 
 if (existingDeviceOwner && user && existingDeviceOwner.toString() !== user.telegramid.toString()) {
   isDuplicate = true;
+  detectionReason = "Duplicate Device / Multi-Account Detected";
+  primaryOwner = existingDeviceOwner;
+} else if (existingIpOwner && user && existingIpOwner.toString() !== user.telegramid.toString()) {
+  isDuplicate = true;
+  detectionReason = "Duplicate Network / Same IP Address (WiFi/Hotspot Multi-Account)";
+  primaryOwner = existingIpOwner;
+} else if (pendingRef && user) {
+  var referrerIp = Bot.getProperty("UserIp_" + pendingRef);
+  var referrerDevice = Bot.getProperty("UserDevice_" + pendingRef);
+  if (referrerIp && referrerIp === clientIp) {
+    isDuplicate = true;
+    detectionReason = "Self-Referral Blocked (Same IP Network as Referrer)";
+    primaryOwner = pendingRef;
+  } else if (referrerDevice && referrerDevice === deviceId) {
+    isDuplicate = true;
+    detectionReason = "Self-Referral Blocked (Same Device as Referrer)";
+    primaryOwner = pendingRef;
+  }
 }
 
 // 3. Handle Duplicate / Second Account vs Genuine Device
-var pendingRef = User.getProperty("pending_referrer");
-
 if (isDuplicate) {
-  // ⚠️ VERIFICATION FAILED: DUPLICATE DEVICE DETECTED
-  // User is allowed to use the bot, BUT the referrer receives 0 credit!
+  // ⚠️ VERIFICATION FAILED: DUPLICATE HARDWARE OR NETWORK DETECTED
   User.setProperty("device_verified", true, "boolean");
   User.setProperty("is_duplicate", true, "boolean");
 
-  var failMsg = "🚫 <b>Device Verification Failed!</b> ⚠️\n\n" +
+  var failMsg = "🚫 <b>Device & Network Verification Failed!</b> ⚠️\n\n" +
     "📱 <b>Device ID:</b> <code>" + deviceId + "</code>\n" +
     "🌐 <b>IP Address:</b> <code>" + clientIp + "</code>\n" +
     "💻 <b>Environment:</b> " + deviceOs + "\n" +
-    "❌ <b>Detection:</b> <b>Duplicate Device / Multi-Account Detected</b>\n" +
-    "👤 <b>Primary Registered Owner:</b> <code>Telegram ID: " + existingDeviceOwner + "</code>\n\n" +
+    "❌ <b>Detection:</b> <b>" + detectionReason + "</b>\n" +
+    "👤 <b>Primary Registered Owner:</b> <code>Telegram ID: " + primaryOwner + "</code>\n\n" +
     "━━━━━━━━━━━━━━━━━━━━\n" +
     "⛔ <b>Referral Reward Voided:</b>\n" +
-    "The user who referred you will <b>NOT</b> receive any credit or reward for this account because this device was already used previously.\n\n" +
+    "The user who referred you will <b>NOT</b> receive any credit or reward for this account because this network/device was already used previously.\n\n" +
     "✅ <b>You Can Still Use This Bot!</b>\n" +
-    "You have full access to explore the bot. You can invite your own real friends from their unique devices to earn free Gmail accounts!";
+    "You have full access to explore the bot. You can invite your own real friends from their unique devices & networks to earn free Gmail accounts!";
 
   Bot.sendMessage(failMsg, { parse_mode: "HTML" });
 
-  // Notify referrer that duplicate device was rejected
+  // Notify referrer that duplicate referral was voided
   if (pendingRef && user && pendingRef.toString() !== user.telegramid.toString()) {
     var inviterName = user.first_name || "User";
     Api.sendMessage({
       chat_id: pendingRef,
-      text: "⚠️ <b>Referral Alert: Duplicate Device Blocked!</b> 🚫\n\n" +
+      text: "⚠️ <b>Referral Alert: Multi-Account Blocked!</b> 🚫\n\n" +
         "👤 <b>User:</b> " + inviterName + " (<code>" + user.telegramid + "</code>)\n" +
         "📱 <b>Device ID:</b> <code>" + deviceId + "</code>\n" +
-        "❌ <b>Reason:</b> Device already registered to another account (Second Account).\n" +
+        "🌐 <b>IP Address:</b> <code>" + clientIp + "</code>\n" +
+        "💻 <b>Environment:</b> " + deviceOs + "\n" +
+        "❌ <b>Reason:</b> " + detectionReason + "\n" +
         "🎁 <b>Points Credited:</b> <b>0 Credits</b>\n\n" +
-        "<i>Only authentic, unique devices count towards referral earnings!</i>",
+        "<i>Only authentic, unique devices & networks count towards referral earnings!</i>",
       parse_mode: "HTML"
     });
   }
@@ -157,11 +198,27 @@ if (isDuplicate) {
   User.setProperty("pending_referrer", null);
 
 } else {
-  // ✅ VERIFICATION PASSED: UNIQUE GENUINE DEVICE
+  // ✅ VERIFICATION PASSED: UNIQUE GENUINE DEVICE & NETWORK
   if (user && user.telegramid) {
     Bot.setProperty("DeviceOwner_" + deviceId, user.telegramid, "integer");
     Bot.setProperty("IpOwner_" + clientIp, user.telegramid, "integer");
     Bot.setProperty("UserDevice_" + user.telegramid, deviceId, "string");
+    Bot.setProperty("UserIp_" + user.telegramid, clientIp, "string");
+
+    // Track keys for clean /reset_all
+    var devKeys = Bot.getProperty("RegisteredDeviceKeys");
+    if (!devKeys || !Array.isArray(devKeys)) { devKeys = []; }
+    if (devKeys.indexOf(deviceId) === -1) {
+      devKeys.push(deviceId);
+      Bot.setProperty("RegisteredDeviceKeys", devKeys, "json");
+    }
+
+    var ipKeys = Bot.getProperty("RegisteredIpKeys");
+    if (!ipKeys || !Array.isArray(ipKeys)) { ipKeys = []; }
+    if (ipKeys.indexOf(clientIp) === -1) {
+      ipKeys.push(clientIp);
+      Bot.setProperty("RegisteredIpKeys", ipKeys, "json");
+    }
   }
 
   User.setProperty("device_verified", true, "boolean");
@@ -173,7 +230,7 @@ if (isDuplicate) {
     "📱 <b>Device ID:</b> <code>" + deviceId + "</code>\n" +
     "🌐 <b>IP Address:</b> <code>" + clientIp + "</code>\n" +
     "💻 <b>Environment:</b> " + deviceOs + "\n" +
-    "✅ <b>Integrity Status:</b> <b>Authentic Unique Device</b>\n\n" +
+    "✅ <b>Integrity Status:</b> <b>Authentic Unique Device & Network</b>\n\n" +
     "<i>Your account is now fully activated with full reward privileges!</i>";
 
   Bot.sendMessage(successMsg, { parse_mode: "HTML" });
@@ -238,7 +295,7 @@ if (isDuplicate) {
       text: "🎉 <b>New Verified Referral!</b> 💎\n\n" +
         "👤 <b>Member:</b> " + userLink + "\n" +
         "🆔 <b>User ID:</b> <code>" + user.telegramid + "</code>\n" +
-        "🛡️ <b>Anti-Cheat:</b> ✅ Unique Device Verified\n" +
+        "🛡️ <b>Anti-Cheat:</b> ✅ Unique Device & Network Verified\n" +
         "🎁 <b>Reward:</b> <b>+1 Gmail Credit added to your balance!</b>\n\n" +
         "💰 <b>Your Current Balance: " + currentRefBal + " Credits</b>",
       parse_mode: "HTML",

@@ -48,8 +48,13 @@ if (devId) {
   Bot.setProperty("DeviceOwner_" + devId, null);
 }
 
-// 2. Queue full reset flag for target user
+// 2. Queue full reset flag for target user and clear IP binding
 if (targetUserId) {
+  var userIp = Bot.getProperty("UserIp_" + targetUserId);
+  if (userIp) {
+    Bot.setProperty("IpOwner_" + userIp, null);
+    Bot.setProperty("UserIp_" + targetUserId, null);
+  }
   Bot.setProperty("UserDevice_" + targetUserId, null);
   Bot.setProperty("ResetUser_" + targetUserId, true, "boolean");
 

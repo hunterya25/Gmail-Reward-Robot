@@ -48,8 +48,12 @@ try {
     return;
   }
 
-  // Check if admin triggered a full reset for this user
-  if (user && Bot.getProperty("ResetUser_" + user.telegramid)) {
+  // Check if admin triggered a full reset for this user or global reset
+  var globalReset = Bot.getProperty("GlobalResetTimestamp");
+  var userLastReset = User.getProperty("last_reset_time") || 0;
+  var needsReset = (user && Bot.getProperty("ResetUser_" + user.telegramid)) || (globalReset && userLastReset < globalReset);
+
+  if (needsReset) {
     User.setProperty("channel_joined", false, "boolean");
     User.setProperty("device_verified", false, "boolean");
     User.setProperty("registered", false, "boolean");
@@ -58,7 +62,22 @@ try {
     User.setProperty("verified_ip", null);
     User.setProperty("pending_referrer", null);
     User.setProperty("referrerId", null);
-    Bot.setProperty("ResetUser_" + user.telegramid, null);
+    User.setProperty("last_reset_time", Date.now(), "integer");
+    try {
+      if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+        Libs.ResourcesLib.userRes("balance").set(0);
+        Libs.ResourcesLib.userRes("total_referrals").set(0);
+      } else {
+        User.setProperty("balance", 0, "integer");
+        User.setProperty("total_referrals", 0, "integer");
+      }
+    } catch (e) {
+      User.setProperty("balance", 0, "integer");
+      User.setProperty("total_referrals", 0, "integer");
+    }
+    if (user) {
+      Bot.setProperty("ResetUser_" + user.telegramid, null);
+    }
   }
 
   // 2. Track unique user registration
