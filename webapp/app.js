@@ -177,10 +177,8 @@
     const os = detectOS();
     const canvasHash = getCanvasFingerprint();
     const webgl = getWebGLFingerprint();
-    const persistentUUID = getPersistentDeviceUUID();
-
-    // Unique Deterministic Device Identifier (Composite Hash)
-    const compositeDeviceRaw = `${canvasHash}_${webgl.renderer}_${screenSpecs}_${cores}_${persistentUUID}`;
+    // Pure physical hardware fingerprint (invariant across different Telegram accounts on the exact same physical phone)
+    const compositeDeviceRaw = `HW_${canvasHash}_${webgl.renderer}_${webgl.vendor}_${screenSpecs}_${cores}_${os}`;
     const deviceId = 'DEV_' + hashString(compositeDeviceRaw).toUpperCase();
 
     // Step 1: Resolving IP (0s -> 0.7s)

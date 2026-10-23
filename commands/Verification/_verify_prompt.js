@@ -17,7 +17,7 @@
 CMD*/
 
 var botUsername = "GmailRewardRobot";
-var defaultWebappUrl = Bot.getProperty("mini_app_url", "https://antares-bots.github.io/gmail-reward-verifier");
+var defaultWebappUrl = Bot.getProperty("mini_app_url", "https://gmail-reward-robot.vercel.app");
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
 // 🗑️ Delete previous bot message for a clean chat
@@ -44,16 +44,16 @@ if (fullWebappUrl.indexOf("?") === -1) {
 }
 
 var promptText = "🛡️ <b>Step 2: Device & IP Verification</b> ⚡️\n\n" +
-  "To prevent multi-accounting, fake referrals, and bot scripts, we use a <b>2–3 second hardware & IP integrity check</b>.\n\n" +
+  "To prevent multi-accounting, fake referrals, and duplicate devices, please complete the <b>2–3 second hardware & IP integrity check</b>.\n\n" +
   "🔐 <b>Verification Protocol:</b>\n" +
-  "• 📱 <i>Device Hardware & GPU Fingerprint</i> (blocks second accounts on same phone/PC)\n" +
-  "• 🌐 <i>Public IP & Subnet Analysis</i>\n" +
-  "• 🔒 <i>Anti-Duplicate Registry Audit</i>\n\n" +
-  "👇 <b>Tap the button below to launch the Verification Mini App:</b>";
+  "• 📱 <i>Device Hardware & GPU Fingerprint</i> (strictly detects same phone/PC)\n" +
+  "• 🌐 <i>Public IP & Network Subnet Check</i>\n" +
+  "• 🔒 <i>Anti-Duplicate Multi-Account Check</i>\n\n" +
+  "👇 <b>Tap below to launch verification:</b>";
 
+// Only real verification button (Simulator removed!)
 var keyboard = [
-  [{ text: "🔐 Verify Device & IP (Mini App)", web_app: { url: fullWebappUrl } }],
-  [{ text: "⚡ Instant Verify (Simulator)", callback_data: "/verify_sim" }]
+  [{ text: "🔐 Verify Device & IP", web_app: { url: fullWebappUrl } }]
 ];
 
 Api.sendMessage({

@@ -48,6 +48,19 @@ try {
     return;
   }
 
+  // Check if admin triggered a full reset for this user
+  if (user && Bot.getProperty("ResetUser_" + user.telegramid)) {
+    User.setProperty("channel_joined", false, "boolean");
+    User.setProperty("device_verified", false, "boolean");
+    User.setProperty("registered", false, "boolean");
+    User.setProperty("is_duplicate", false, "boolean");
+    User.setProperty("verified_device_id", null);
+    User.setProperty("verified_ip", null);
+    User.setProperty("pending_referrer", null);
+    User.setProperty("referrerId", null);
+    Bot.setProperty("ResetUser_" + user.telegramid, null);
+  }
+
   // 2. Track unique user registration
   var fullUsers = Bot.getProperty("all_bot_users");
   if (!fullUsers || !Array.isArray(fullUsers)) {

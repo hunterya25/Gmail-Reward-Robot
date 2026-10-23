@@ -39,7 +39,7 @@ if (targetInput.indexOf("DEV_") === 0) {
   devId = targetInput;
   targetUserId = Bot.getProperty("DeviceOwner_" + devId);
 } else {
-  targetUserId = parseInt(targetInput);
+  targetUserId = targetInput.trim();
   devId = Bot.getProperty("UserDevice_" + targetUserId);
 }
 
@@ -48,28 +48,22 @@ if (devId) {
   Bot.setProperty("DeviceOwner_" + devId, null);
 }
 
-// 2. Fully reset target user so they are treated as a completely brand new device
+// 2. Queue full reset flag for target user
 if (targetUserId) {
   Bot.setProperty("UserDevice_" + targetUserId, null);
-  
-  // Reset User properties
-  User.setProperty({ name: "channel_joined", value: false, user_id: targetUserId });
-  User.setProperty({ name: "device_verified", value: false, user_id: targetUserId });
-  User.setProperty({ name: "registered", value: false, user_id: targetUserId });
-  User.setProperty({ name: "is_duplicate", value: false, user_id: targetUserId });
-  User.setProperty({ name: "verified_device_id", value: null, user_id: targetUserId });
-  User.setProperty({ name: "verified_ip", value: null, user_id: targetUserId });
-  User.setProperty({ name: "pending_referrer", value: null, user_id: targetUserId });
-  User.setProperty({ name: "referrerId", value: null, user_id: targetUserId });
-  User.setProperty({ name: "last_bot_msg_id", value: null, user_id: targetUserId });
+  Bot.setProperty("ResetUser_" + targetUserId, true, "boolean");
 
-  // If admin is clearing themselves
-  if (user.telegramid == targetUserId) {
-    User.setProperty("channel_joined", false);
-    User.setProperty("device_verified", false);
-    User.setProperty("registered", false);
-    User.setProperty("is_duplicate", false);
+  // If admin is clearing themselves in this session
+  if (user.telegramid.toString() === targetUserId.toString()) {
+    User.setProperty("channel_joined", false, "boolean");
+    User.setProperty("device_verified", false, "boolean");
+    User.setProperty("registered", false, "boolean");
+    User.setProperty("is_duplicate", false, "boolean");
     User.setProperty("verified_device_id", null);
+    User.setProperty("verified_ip", null);
+    User.setProperty("pending_referrer", null);
+    User.setProperty("referrerId", null);
+    Bot.setProperty("ResetUser_" + targetUserId, null);
   }
 }
 
@@ -77,6 +71,6 @@ Bot.sendMessage(
   "✅ <b>Device & User Completely Reset!</b> 🔄\n\n" +
   "📱 <b>Device ID:</b> <code>" + (devId || "N/A") + "</code>\n" +
   "👤 <b>Target User:</b> <code>" + (targetUserId || "Unknown") + "</code>\n\n" +
-  "<i>This account will now be treated as a 100% brand new device: forced to rejoin channel and verify device afresh on /start!</i>",
+  "<i>Device registry cleared! User will be treated as 100% brand new on /start (forced to rejoin channel and verify again).</i>",
   { parse_mode: "HTML" }
 );
