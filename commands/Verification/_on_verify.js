@@ -80,16 +80,15 @@ if (!isSimulation && rawToken) {
 
 // Fallback if simulation or parse error
 if (!deviceId) {
-  deviceId = "DEV_SIM_" + user.telegramid;
+  deviceId = "DEV_SIM_" + (user ? user.telegramid : "guest");
   clientIp = "103." + (Math.floor(Math.random() * 200) + 10) + ".45.12";
 }
 
 // 2. 🛡️ ANTI-CHEAT CROSS-CHECK
-// Check if this physical device ID is already registered to ANOTHER Telegram ID
 var existingDeviceOwner = Bot.getProperty("DeviceOwner_" + deviceId);
 var isDuplicate = false;
 
-if (existingDeviceOwner && existingDeviceOwner.toString() !== user.telegramid.toString()) {
+if (existingDeviceOwner && user && existingDeviceOwner.toString() !== user.telegramid.toString()) {
   isDuplicate = true;
 }
 
@@ -98,7 +97,6 @@ var pendingRef = User.getProperty("pending_referrer");
 
 if (isDuplicate) {
   // ⚠️ VERIFICATION FAILED: DUPLICATE DEVICE DETECTED
-  // User is allowed to use the bot, BUT the referrer receives 0 credit!
   User.setProperty("device_verified", true, "boolean");
   User.setProperty("is_duplicate", true, "boolean");
 
@@ -111,7 +109,7 @@ if (isDuplicate) {
   Bot.sendMessage(failMsg, { parse_mode: "html" });
 
   // Notify referrer that duplicate device was rejected
-  if (pendingRef && pendingRef.toString() !== user.telegramid.toString()) {
+  if (pendingRef && user && pendingRef.toString() !== user.telegramid.toString()) {
     var inviterName = user.first_name || "User";
     Api.sendMessage({
       chat_id: pendingRef,
@@ -128,8 +126,10 @@ if (isDuplicate) {
 
 } else {
   // ✅ VERIFICATION PASSED: UNIQUE GENUINE DEVICE
-  Bot.setProperty("DeviceOwner_" + deviceId, user.telegramid, "integer");
-  Bot.setProperty("IpOwner_" + clientIp, user.telegramid, "integer");
+  if (user && user.telegramid) {
+    Bot.setProperty("DeviceOwner_" + deviceId, user.telegramid, "integer");
+    Bot.setProperty("IpOwner_" + clientIp, user.telegramid, "integer");
+  }
 
   User.setProperty("device_verified", true, "boolean");
   User.setProperty("is_duplicate", false, "boolean");
@@ -146,21 +146,45 @@ if (isDuplicate) {
   Bot.sendMessage(successMsg, { parse_mode: "html" });
 
   // Process Referral Attribution for genuine user
-  if (pendingRef && pendingRef.toString() !== user.telegramid.toString()) {
+  if (pendingRef && user && pendingRef.toString() !== user.telegramid.toString()) {
     var refId = pendingRef;
     User.setProperty("referrerId", refId, "string");
 
-    // Add +1 Gmail Credit to Referrer
-    var refBalance = Libs.ResourcesLib.anotherUserRes("balance", refId);
-    refBalance.add(1);
+    // Add +1 Gmail Credit to Referrer safely
+    var currentRefBal = 0;
+    try {
+      if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+        var refBalance = Libs.ResourcesLib.anotherUserRes("balance", refId);
+        refBalance.add(1);
+        currentRefBal = refBalance.value();
+      } else {
+        var oldBal = Bot.getProperty("balance_" + refId) || 0;
+        currentRefBal = parseFloat(oldBal) + 1;
+        Bot.setProperty("balance_" + refId, currentRefBal, "integer");
+      }
+    } catch (e) {
+      var oldBal = Bot.getProperty("balance_" + refId) || 0;
+      currentRefBal = parseFloat(oldBal) + 1;
+      Bot.setProperty("balance_" + refId, currentRefBal, "integer");
+    }
 
-    // Add +1 Total Verified Referrals
-    var refTotal = Libs.ResourcesLib.anotherUserRes("total_referrals", refId);
-    refTotal.add(1);
+    // Add +1 Total Verified Referrals safely
+    try {
+      if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+        var refTotal = Libs.ResourcesLib.anotherUserRes("total_referrals", refId);
+        refTotal.add(1);
+      } else {
+        var oldTot = Bot.getProperty("total_referrals_" + refId) || 0;
+        Bot.setProperty("total_referrals_" + refId, parseInt(oldTot) + 1, "integer");
+      }
+    } catch (e) {
+      var oldTot = Bot.getProperty("total_referrals_" + refId) || 0;
+      Bot.setProperty("total_referrals_" + refId, parseInt(oldTot) + 1, "integer");
+    }
 
     // Save to Referrer's list
-    var refList = Bot.getProperty("UserReferrals_" + refId, []);
-    if (!refList) { refList = []; }
+    var refList = Bot.getProperty("UserReferrals_" + refId);
+    if (!refList || !Array.isArray(refList)) { refList = []; }
     var nowTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
     refList.unshift({
       id: user.telegramid,
@@ -183,7 +207,7 @@ if (isDuplicate) {
         "🆔 <b>User ID:</b> <code>" + user.telegramid + "</code>\n" +
         "🛡️ <b>Anti-Cheat:</b> ✅ Unique Device Verified\n" +
         "🎁 <b>Reward:</b> <b>+1 Gmail Credit added to your balance!</b>\n\n" +
-        "💰 <b>Your Current Balance: " + refBalance.value() + " Credits</b>",
+        "💰 <b>Your Current Balance: " + currentRefBal + " Credits</b>",
       parse_mode: "html",
       disable_web_page_preview: true
     });
@@ -193,8 +217,21 @@ if (isDuplicate) {
 }
 
 // 4. Send Main Menu Dashboard Keyboard
-var myBalance = Libs.ResourcesLib.userRes("balance").value();
-var myRefs = Libs.ResourcesLib.userRes("total_referrals").value();
+var myBalance = 0;
+var myRefs = 0;
+
+try {
+  if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+    myBalance = Libs.ResourcesLib.userRes("balance").value();
+    myRefs = Libs.ResourcesLib.userRes("total_referrals").value();
+  } else {
+    myBalance = User.getProperty("balance") || 0;
+    myRefs = User.getProperty("total_referrals") || 0;
+  }
+} catch (e) {
+  myBalance = User.getProperty("balance") || 0;
+  myRefs = User.getProperty("total_referrals") || 0;
+}
 
 var menuText = "👋 <b>Welcome to @GmailRewardRobot!</b> ⚡️\n\n" +
   "💰 <b>Your Gmail Balance:</b> <b>" + myBalance + " Credits</b>\n" +

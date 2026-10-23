@@ -16,19 +16,22 @@
   group: 
 CMD*/
 
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
 if (request && request.id) {
   Api.answerCallbackQuery({ callback_query_id: request.id });
 }
 
-var userMails = User.getProperty("MyClaimedGmails", []);
+var userMails = User.getProperty("MyClaimedGmails");
 
-if (!userMails || userMails.length === 0) {
+if (!userMails || !Array.isArray(userMails) || userMails.length === 0) {
   var emptyText = "📭 <b>No Gmail Accounts Claimed Yet!</b>\n\n" +
     "You haven't redeemed any Gmail accounts yet.\n" +
     "Earn credits by sharing your referral link and claim your first Gmail!";
 
   var kbd = [[{ text: "👥 Refer & Earn", callback_data: "/refer" }]];
   Api.sendMessage({
+    chat_id: chatId,
     text: emptyText,
     parse_mode: "html",
     reply_markup: { inline_keyboard: kbd }
@@ -53,6 +56,7 @@ if (userMails.length > 10) {
 var kbd = [[{ text: "🔙 Return to Menu", callback_data: "/start" }]];
 
 Api.sendMessage({
+  chat_id: chatId,
   text: msg,
   parse_mode: "html",
   reply_markup: { inline_keyboard: kbd }

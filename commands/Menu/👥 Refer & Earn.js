@@ -17,13 +17,26 @@
 CMD*/
 
 var botUsername = "GmailRewardRobot";
-var refLink = "https://t.me/" + botUsername + "?start=ref" + user.telegramid;
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+var refLink = "https://t.me/" + botUsername + "?start=ref" + (user ? user.telegramid : "");
 
-var refRes = Libs.ResourcesLib.userRes("total_referrals");
-var totalRefs = refRes ? refRes.value() : 0;
+var currentBalance = 0;
+var totalRefs = 0;
 
-var balanceRes = Libs.ResourcesLib.userRes("balance");
-var currentBalance = balanceRes ? balanceRes.value() : 0;
+try {
+  if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+    var refRes = Libs.ResourcesLib.userRes("total_referrals");
+    totalRefs = refRes ? refRes.value() : 0;
+    var balanceRes = Libs.ResourcesLib.userRes("balance");
+    currentBalance = balanceRes ? balanceRes.value() : 0;
+  } else {
+    currentBalance = User.getProperty("balance") || 0;
+    totalRefs = User.getProperty("total_referrals") || 0;
+  }
+} catch (e) {
+  currentBalance = User.getProperty("balance") || 0;
+  totalRefs = User.getProperty("total_referrals") || 0;
+}
 
 var shareText = encodeURIComponent(
   "🎁 Get Free Fresh & Verified Gmail Accounts on Telegram!\n\n" +
@@ -51,6 +64,7 @@ var keyboard = [
 ];
 
 Api.sendMessage({
+  chat_id: chatId,
   text: referText,
   parse_mode: "html",
   disable_web_page_preview: true,

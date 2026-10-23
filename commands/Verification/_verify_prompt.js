@@ -18,6 +18,7 @@ CMD*/
 
 var botUsername = "GmailRewardRobot";
 var defaultWebappUrl = Bot.getProperty("mini_app_url", "https://antares-bots.github.io/gmail-reward-verifier");
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
 // Ensure URL has user params
 var fullWebappUrl = defaultWebappUrl;
@@ -40,18 +41,10 @@ var keyboard = [
   [{ text: "⚡ Instant Verify (Simulator)", callback_data: "/verify_sim" }]
 ];
 
-if (request && request.message && request.message.message_id) {
-  Api.sendMessage({
-    text: promptText,
-    parse_mode: "html",
-    disable_web_page_preview: true,
-    reply_markup: { inline_keyboard: keyboard }
-  });
-} else {
-  Api.sendMessage({
-    text: promptText,
-    parse_mode: "html",
-    disable_web_page_preview: true,
-    reply_markup: { inline_keyboard: keyboard }
-  });
-}
+Api.sendMessage({
+  chat_id: chatId,
+  text: promptText,
+  parse_mode: "html",
+  disable_web_page_preview: true,
+  reply_markup: { inline_keyboard: keyboard }
+});

@@ -16,8 +16,11 @@
   group: 
 CMD*/
 
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
 if (!options || !options.result) {
   Api.sendMessage({
+    chat_id: chatId,
     text: "⚠️ <b>Unable to verify membership at this moment.</b> Please try clicking Verify again.",
     parse_mode: "html"
   });
@@ -34,7 +37,7 @@ if (isJoined) {
   // 🗑️ Delete the channel join prompt message as requested!
   if (request && request.message && request.message.message_id) {
     Api.deleteMessage({
-      chat_id: chat.chatid,
+      chat_id: chatId,
       message_id: request.message.message_id
     });
   }
@@ -63,6 +66,7 @@ if (isJoined) {
 
   if (request && request.message && request.message.message_id) {
     Api.editMessageText({
+      chat_id: chatId,
       message_id: request.message.message_id,
       text: failText,
       parse_mode: "html",
@@ -71,6 +75,7 @@ if (isJoined) {
     });
   } else {
     Api.sendMessage({
+      chat_id: chatId,
       text: failText,
       parse_mode: "html",
       disable_web_page_preview: true,

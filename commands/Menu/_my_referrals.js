@@ -16,19 +16,22 @@
   group: 
 CMD*/
 
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
 if (request && request.id) {
   Api.answerCallbackQuery({ callback_query_id: request.id });
 }
 
-var refList = Bot.getProperty("UserReferrals_" + user.telegramid, []);
+var refList = Bot.getProperty("UserReferrals_" + user.telegramid);
 
-if (!refList || refList.length === 0) {
+if (!refList || !Array.isArray(refList) || refList.length === 0) {
   var emptyMsg = "👥 <b>No Referrals Yet!</b>\n\n" +
     "You have not invited any friends yet.\n" +
     "Share your link and earn <b>1 Gmail Credit</b> for every unique device that verifies!";
 
   var kbd = [[{ text: "🤝 Get My Referral Link", callback_data: "/refer" }]];
   Api.sendMessage({
+    chat_id: chatId,
     text: emptyMsg,
     parse_mode: "html",
     reply_markup: { inline_keyboard: kbd }
@@ -59,6 +62,7 @@ var kbd = [
 ];
 
 Api.sendMessage({
+  chat_id: chatId,
   text: msg,
   parse_mode: "html",
   reply_markup: { inline_keyboard: kbd }

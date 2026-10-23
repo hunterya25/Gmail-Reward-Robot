@@ -16,6 +16,8 @@
   group: 
 CMD*/
 
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+
 if (request && request.id) {
   Api.answerCallbackQuery({
     callback_query_id: request.id,
@@ -24,8 +26,19 @@ if (request && request.id) {
   });
 }
 
-var balanceRes = Libs.ResourcesLib.userRes("balance");
-var currentBalance = balanceRes ? balanceRes.value() : 0;
+var currentBalance = 0;
+var balanceRes = null;
+
+try {
+  if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+    balanceRes = Libs.ResourcesLib.userRes("balance");
+    currentBalance = balanceRes ? balanceRes.value() : 0;
+  } else {
+    currentBalance = User.getProperty("balance") || 0;
+  }
+} catch (e) {
+  currentBalance = User.getProperty("balance") || 0;
+}
 
 if (currentBalance < 1) {
   var needMoreText = "⚠️ <b>Insufficient Gmail Credits!</b>\n\n" +
@@ -34,6 +47,7 @@ if (currentBalance < 1) {
 
   var kbd = [[{ text: "🤝 Invite Friends Now", callback_data: "/refer" }]];
   Api.sendMessage({
+    chat_id: chatId,
     text: needMoreText,
     parse_mode: "html",
     reply_markup: { inline_keyboard: kbd }
@@ -41,8 +55,8 @@ if (currentBalance < 1) {
   return;
 }
 
-var gmailStock = Bot.getProperty("GmailStock", []);
-if (!gmailStock || gmailStock.length === 0) {
+var gmailStock = Bot.getProperty("GmailStock");
+if (!gmailStock || !Array.isArray(gmailStock) || gmailStock.length === 0) {
   var adm = Bot.getProperty("adminID");
   if (adm) {
     Api.sendMessage({
@@ -53,6 +67,7 @@ if (!gmailStock || gmailStock.length === 0) {
   }
 
   Api.sendMessage({
+    chat_id: chatId,
     text: "⚠️ <b>Stock Currently Depleted!</b>\n\nAll pre-loaded Gmail accounts have been claimed. Our administrators have been alerted to restock immediately.\n\n<i>Note: No credits were deducted from your balance. Please try claiming again shortly!</i>",
     parse_mode: "html"
   });
@@ -64,14 +79,20 @@ var claimedItem = gmailStock.shift();
 Bot.setProperty("GmailStock", gmailStock, "json");
 
 // Deduct 1 credit
-balanceRes.add(-1);
+if (balanceRes && balanceRes.add) {
+  balanceRes.add(-1);
+} else {
+  User.setProperty("balance", currentBalance - 1, "integer");
+}
+
+var remBalance = currentBalance - 1;
 
 // Save to user claimed list
 var nowTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 claimedItem.claimed_at = nowTime;
 
-var userMails = User.getProperty("MyClaimedGmails", []);
-if (!userMails) { userMails = []; }
+var userMails = User.getProperty("MyClaimedGmails");
+if (!userMails || !Array.isArray(userMails)) { userMails = []; }
 userMails.unshift(claimedItem);
 User.setProperty("MyClaimedGmails", userMails, "json");
 
@@ -84,7 +105,7 @@ var successDispenseText = "🎉 <b>Congratulations! Fresh Gmail Claimed</b> 📬
   "⚠️ <b>Security Notice:</b>\n" +
   "• Please log in immediately and update password / recovery details.\n" +
   "• This account is now exclusively yours.\n\n" +
-  "💰 <i>Remaining Balance: " + balanceRes.value() + " Credits</i>";
+  "💰 <i>Remaining Balance: " + remBalance + " Credits</i>";
 
 var kbd = [
   [{ text: "📜 My Claimed Mails", callback_data: "/my_mails" }],
@@ -92,6 +113,7 @@ var kbd = [
 ];
 
 Api.sendMessage({
+  chat_id: chatId,
   text: successDispenseText,
   parse_mode: "html",
   reply_markup: { inline_keyboard: kbd }

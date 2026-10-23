@@ -16,17 +16,30 @@
   group: 
 CMD*/
 
-var balanceRes = Libs.ResourcesLib.userRes("balance");
-var currentBalance = balanceRes ? balanceRes.value() : 0;
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+var currentBalance = 0;
+var totalRefs = 0;
 
-var totalRefsRes = Libs.ResourcesLib.userRes("total_referrals");
-var totalRefs = totalRefsRes ? totalRefsRes.value() : 0;
+try {
+  if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+    var balanceRes = Libs.ResourcesLib.userRes("balance");
+    currentBalance = balanceRes ? balanceRes.value() : 0;
+    var totalRefsRes = Libs.ResourcesLib.userRes("total_referrals");
+    totalRefs = totalRefsRes ? totalRefsRes.value() : 0;
+  } else {
+    currentBalance = User.getProperty("balance") || 0;
+    totalRefs = User.getProperty("total_referrals") || 0;
+  }
+} catch (e) {
+  currentBalance = User.getProperty("balance") || 0;
+  totalRefs = User.getProperty("total_referrals") || 0;
+}
 
 var isDuplicate = User.getProperty("is_duplicate");
 var devStatus = isDuplicate ? "⚠️ Restricted (Duplicate Device)" : "✅ Active & Verified";
 
-var myMails = User.getProperty("MyClaimedGmails", []);
-var claimedCount = myMails ? myMails.length : 0;
+var myMails = User.getProperty("MyClaimedGmails");
+var claimedCount = (myMails && Array.isArray(myMails)) ? myMails.length : 0;
 
 var balanceText = "💳 <b>Your Account Overview</b> 💎\n\n" +
   "👤 <b>Account:</b> " + (user.first_name || "User") + " (<code>" + user.telegramid + "</code>)\n" +
@@ -44,6 +57,7 @@ var keyboard = [
 ];
 
 Api.sendMessage({
+  chat_id: chatId,
   text: balanceText,
   parse_mode: "html",
   reply_markup: { inline_keyboard: keyboard }

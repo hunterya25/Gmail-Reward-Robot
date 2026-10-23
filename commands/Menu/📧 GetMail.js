@@ -16,14 +16,25 @@
   group: 
 CMD*/
 
-var balanceRes = Libs.ResourcesLib.userRes("balance");
-var currentBalance = balanceRes ? balanceRes.value() : 0;
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
+var currentBalance = 0;
 
-var gmailStock = Bot.getProperty("GmailStock", []);
-var inStock = gmailStock ? gmailStock.length : 0;
+try {
+  if (typeof Libs !== "undefined" && Libs.ResourcesLib) {
+    var balanceRes = Libs.ResourcesLib.userRes("balance");
+    currentBalance = balanceRes ? balanceRes.value() : 0;
+  } else {
+    currentBalance = User.getProperty("balance") || 0;
+  }
+} catch (e) {
+  currentBalance = User.getProperty("balance") || 0;
+}
 
-var myMails = User.getProperty("MyClaimedGmails", []);
-var claimedCount = myMails ? myMails.length : 0;
+var gmailStock = Bot.getProperty("GmailStock");
+var inStock = (gmailStock && Array.isArray(gmailStock)) ? gmailStock.length : 0;
+
+var myMails = User.getProperty("MyClaimedGmails");
+var claimedCount = (myMails && Array.isArray(myMails)) ? myMails.length : 0;
 
 var mailText = "📧 <b>Instant Gmail Dispenser</b> ⚡️\n\n" +
   "🌟 <i>Claim 100% Fresh, Phone-Verified & High-Quality Gmail Accounts!</i>\n\n" +
@@ -46,6 +57,7 @@ if (currentBalance >= 1) {
 keyboard.push([{ text: "📜 View My Claimed Accounts (" + claimedCount + ")", callback_data: "/my_mails" }]);
 
 Api.sendMessage({
+  chat_id: chatId,
   text: mailText,
   parse_mode: "html",
   reply_markup: { inline_keyboard: keyboard }

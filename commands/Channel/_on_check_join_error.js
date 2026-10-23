@@ -16,6 +16,7 @@
   group: 
 CMD*/
 
+var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 var errDescription = (options && options.description) ? options.description : "Unknown Telegram Error";
 
 var errPrompt = "⚠️ <b>Channel Verification Error</b>\n\n" +
@@ -31,6 +32,7 @@ var keyboard = [
 
 if (request && request.message && request.message.message_id) {
   Api.editMessageText({
+    chat_id: chatId,
     message_id: request.message.message_id,
     text: errPrompt,
     parse_mode: "html",
@@ -39,6 +41,7 @@ if (request && request.message && request.message.message_id) {
   });
 } else {
   Api.sendMessage({
+    chat_id: chatId,
     text: errPrompt,
     parse_mode: "html",
     disable_web_page_preview: true,
