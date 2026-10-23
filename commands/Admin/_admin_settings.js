@@ -32,19 +32,25 @@ if (request && request.message && request.message.message_id) {
 
 var isMaint = Bot.getProperty("maintenance_mode");
 var maintStatus = isMaint ? "🔴 ENABLED (Bot Locked for Users)" : "🟢 DISABLED (Normal Operation)";
-var curChannel = Bot.getProperty("mandatory_channel", "@BotsByAntares");
+var chs = Bot.getProperty("mandatory_channels");
+if (!chs || !Array.isArray(chs) || chs.length === 0) {
+  chs = [Bot.getProperty("mandatory_channel", "@BotsByAntares")];
+}
+var chsDisplay = chs.join(", ");
 var curWebapp = Bot.getProperty("mini_app_url", "https://antares-bots.github.io/gmail-reward-verifier");
 var curSupport = Bot.getProperty("support_username", "@BotsByAntares");
 
 var settingsText = "⚙️ <b>Bot Settings & System Configuration Division</b> 🛠️\n\n" +
   "• 🚧 <b>Maintenance Mode:</b>\n" + maintStatus + "\n\n" +
-  "• 📢 <b>Mandatory Join Channel:</b>\n<code>" + curChannel + "</code>\n\n" +
+  "• 📢 <b>Mandatory Join Channels (" + chs.length + "):</b>\n<code>" + chsDisplay + "</code>\n\n" +
   "• 🌐 <b>Mini App Verifier URL:</b>\n<code>" + curWebapp + "</code>\n\n" +
   "• 💬 <b>Official Support Handle:</b>\n<code>" + curSupport + "</code>\n\n" +
   "━━━━━━━━━━━━━━━━━━━━\n" +
   "⚡️ <b>Quick Commands Available:</b>\n" +
   "• <code>/toggle_maintenance</code> — Turn maintenance mode ON or OFF\n" +
-  "• <code>/set_channel &lt;@channel&gt;</code> — Update required channel gate\n" +
+  "• <code>/add_channel &lt;@channel&gt;</code> — Add new channel to gate\n" +
+  "• <code>/del_channel &lt;@channel&gt;</code> — Remove channel from gate\n" +
+  "• <code>/channels</code> — View and manage all channel gates\n" +
   "• <code>/set_webapp &lt;https://...&gt;</code> — Update verification webapp URL\n" +
   "• <code>/set_support &lt;@username&gt;</code> — Update support contact handle\n\n" +
   "👇 <i>Or tap an action below:</i>";
@@ -52,7 +58,7 @@ var settingsText = "⚙️ <b>Bot Settings & System Configuration Division</b> �
 var kbd = [
   [{ text: (isMaint ? "🟢 Disable Maintenance Mode" : "🔴 Enable Maintenance Mode"), callback_data: "/toggle_maintenance" }],
   [
-    { text: "📢 Change Channel Gate", callback_data: "/prompt_set_channel" },
+    { text: "📢 Manage Channels (" + chs.length + ")", callback_data: "/channels" },
     { text: "🌐 Change WebApp URL", callback_data: "/prompt_set_webapp" }
   ],
   [

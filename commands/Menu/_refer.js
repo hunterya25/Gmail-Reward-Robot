@@ -19,6 +19,14 @@ CMD*/
 var botUsername = "GmailRewardRobot";
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
+// 0. Maintenance Mode Check
+var adm = Bot.getProperty("adminID");
+var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
+if (Bot.getProperty("maintenance_mode") && !isAdm) {
+  Bot.sendMessage("🚧 <b>System Under Maintenance!</b> 🛠️\n\nOur engineers are upgrading the bot servers. Please check back shortly!", { parse_mode: "HTML" });
+  return;
+}
+
 // 🗑️ Delete previous bot message for a clean chat
 var lastBotMsg = User.getProperty("last_bot_msg_id");
 if (lastBotMsg) {

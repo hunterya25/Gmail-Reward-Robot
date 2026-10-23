@@ -12,7 +12,7 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: /prompt_add_bal, /prompt_cut_bal, /prompt_ban, /prompt_clear_dev, /prompt_add_normal, /prompt_add_recovery, /prompt_add_2fa, /prompt_wipe_stock, /prompt_set_channel, /prompt_set_webapp, /prompt_set_support, /prompt_broadcast, /prompt_broadcast_pin, /prompt_inspect_refs, /prompt_set_price
+  aliases: /prompt_add_bal, /prompt_cut_bal, /prompt_ban, /prompt_clear_dev, /prompt_add_normal, /prompt_add_recovery, /prompt_add_2fa, /prompt_wipe_stock, /prompt_set_channel, /prompt_set_webapp, /prompt_set_support, /prompt_broadcast, /prompt_broadcast_pin, /prompt_inspect_refs, /prompt_set_price, /prompt_msg_user, /prompt_create_promo
   group: 
 CMD*/
 
@@ -76,6 +76,12 @@ if (cmd === "/prompt_user_info") {
 } else if (cmd === "/prompt_broadcast_pin") {
   msg = "📌 <b>Global Pinned Announcement:</b>\n\nSend command:\n<code>/broadcast_pin &lt;Your Announcement Message&gt;</code>";
   backCmd = "/admin_broadcast";
+} else if (cmd === "/prompt_msg_user") {
+  msg = "✉️ <b>Send Private Message to User:</b>\n\nSend command:\n<code>/msg_user &lt;USER_TELEGRAM_ID&gt; &lt;Your Message&gt;</code>\n\n<i>Example:</i> <code>/msg_user 8669173066 Hello! Your custom order has been processed.</code>";
+  backCmd = "/admin_broadcast";
+} else if (cmd === "/prompt_create_promo") {
+  msg = "➕ <b>Create Promotional Gift Code:</b>\n\nSend command:\n<code>/create_promo &lt;CODE&gt; &lt;AMOUNT&gt; &lt;MAX_USERS&gt;</code>\n\n<i>Example:</i> <code>/create_promo BONUS2 2 50</code>";
+  backCmd = "/admin_promos";
 } else if (cmd === "/prompt_inspect_refs") {
   msg = "🔍 <b>Inspect Member Referrals:</b>\n\nSend command:\n<code>/inspect_refs &lt;USER_ID&gt;</code>";
   backCmd = "/admin_refers";

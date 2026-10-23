@@ -65,6 +65,7 @@ var kbd = [
     { text: "🎁 Set Referral Bonus (" + pRef + " Cr)", callback_data: "/prompt_set_price ref" },
     { text: "🔄 Reset Defaults", callback_data: "/reset_prices" }
   ],
+  [{ text: "🎟️ Promo Codes Management", callback_data: "/admin_promos" }],
   [{ text: "🔙 Back to Admin Hub", callback_data: "/admin" }]
 ];
 

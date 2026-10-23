@@ -37,12 +37,14 @@ var broadText = "📢 <b>Broadcasting & Announcements Suite</b> ⚡️\n\n" +
   "━━━━━━━━━━━━━━━━━━━━\n" +
   "⚡️ <b>Quick Commands Available:</b>\n" +
   "• <code>/broadcast &lt;message&gt;</code> — Send global message to all users\n" +
-  "• <code>/broadcast_pin &lt;message&gt;</code> — Send message and pin it in chats\n\n" +
+  "• <code>/broadcast_pin &lt;message&gt;</code> — Send message and pin it in chats\n" +
+  "• <code>/msg_user &lt;USER_ID&gt; &lt;message&gt;</code> — Send private message to specific user\n\n" +
   "👇 <i>Or tap an option below:</i>";
 
 var kbd = [
   [{ text: "📢 Send Normal Broadcast", callback_data: "/prompt_broadcast" }],
   [{ text: "📌 Send Pinned Announcement", callback_data: "/prompt_broadcast_pin" }],
+  [{ text: "✉️ Send Private Message to User", callback_data: "/prompt_msg_user" }],
   [{ text: "🔙 Back to Admin Hub", callback_data: "/admin" }]
 ];
 

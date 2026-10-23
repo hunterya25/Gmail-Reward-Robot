@@ -49,10 +49,17 @@ if (isJoined === false) {
   return;
 }
 
-// 2. Identify Category
+// 2. Identify Category & Check Category State (ON / OFF / PRIVATE)
 var cat = params ? params.trim().toLowerCase() : "normal";
 if (cat !== "normal" && cat !== "recovery" && cat !== "2fa") {
   cat = "normal";
+}
+
+var catState = Bot.getProperty("CategoryState_" + cat) || "ON";
+
+if (catState === "PRIVATE") {
+  Bot.sendMessage("❌ <b>Category not found.</b>", { parse_mode: "HTML" });
+  return;
 }
 
 var catTitles = {
@@ -61,6 +68,13 @@ var catTitles = {
   "2fa": "🔐 2-Step Verification (2FA) Gmail"
 };
 
+var catName = catTitles[cat];
+
+if (catState === "OFF") {
+  Bot.sendMessage("⚠️ <b>" + catName + " are temporarily disabled by administration.</b>\n\n<i>Please check back later or choose another category!</i>", { parse_mode: "HTML" });
+  return;
+}
+
 var catPrices = {
   normal: Bot.getProperty("Price_Normal") || 1,
   recovery: Bot.getProperty("Price_Recovery") || 2,
@@ -68,7 +82,6 @@ var catPrices = {
 };
 
 var price = catPrices[cat];
-var catName = catTitles[cat];
 
 // 3. Check Balance
 var currentBalance = 0;
@@ -175,9 +188,11 @@ Bot.setProperty("TotalGmailsClaimedGlobal", totalClaimedGlobal + 1, "integer");
 
 var extraInfo = "";
 if (cat === "recovery") {
-  extraInfo = "\n🛡️ <b>Recovery Email:</b>\n<code>" + (item.recovery || "Check inbox") + "</code>\n";
+  if (item.recovery) extraInfo += "\n🛡️ <b>Recovery Email:</b>\n<code>" + item.recovery + "</code>\n";
+  if (item.extra_notes) extraInfo += "📝 <b>Extra Notes:</b> <code>" + item.extra_notes + "</code>\n";
 } else if (cat === "2fa") {
-  extraInfo = "\n🔐 <b>2FA / Backup Keys:</b>\n<code>" + (item.two_factor || item.recovery || "2FA Enabled") + "</code>\n";
+  if (item.two_factor) extraInfo += "\n🔐 <b>2FA / Backup Key:</b>\n<code>" + item.two_factor + "</code>\n";
+  if (item.app_password) extraInfo += "⚡ <b>App Password:</b>\n<code>" + item.app_password + "</code>\n";
 }
 
 var dispenseSuccessText = "🎉 <b>Congratulations! Account Claimed</b> 📬\n\n" +

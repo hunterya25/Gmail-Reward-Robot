@@ -18,6 +18,14 @@ CMD*/
 
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
+// 0. Maintenance Mode Check
+var adm = Bot.getProperty("adminID");
+var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
+if (Bot.getProperty("maintenance_mode") && !isAdm) {
+  Bot.sendMessage("🚧 <b>System Under Maintenance!</b> 🛠️\n\nOur engineers are upgrading the bot servers. Please check back shortly!", { parse_mode: "HTML" });
+  return;
+}
+
 if (request && request.id) {
   Api.answerCallbackQuery({ callback_query_id: request.id });
 }
@@ -51,10 +59,13 @@ var msg = "📜 <b>Your Claimed Gmail Accounts (" + userMails.length + ")</b> �
 
 for (var i = 0; i < userMails.length && i < 10; i++) {
   var m = userMails[i];
-  msg += "<b>#" + (i + 1) + " Account:</b>\n" +
+  msg += "<b>#" + (i + 1) + " [" + (m.category || "Gmail") + "]:</b>\n" +
     "📧 <code>" + m.email + "</code>\n" +
-    "🔑 <code>" + m.password + "</code>\n" +
-    "📅 <i>Claimed: " + (m.claimed_at || "N/A") + "</i>\n\n";
+    "🔑 <code>" + m.password + "</code>\n";
+  if (m.recovery) msg += "🛡️ Recovery: <code>" + m.recovery + "</code>\n";
+  if (m.two_factor) msg += "🔐 2FA: <code>" + m.two_factor + "</code>\n";
+  if (m.app_password) msg += "⚡ App Pass: <code>" + m.app_password + "</code>\n";
+  msg += "📅 <i>Claimed: " + (m.claimed_at || "N/A") + "</i>\n\n";
 }
 
 if (userMails.length > 10) {

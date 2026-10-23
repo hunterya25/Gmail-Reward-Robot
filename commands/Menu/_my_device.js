@@ -44,7 +44,6 @@ var securityCard = "🛡️ <b>Your Device & Account Security Profile</b> 🔍\n
   "Our system secures referral bonuses by binding each Telegram account to an invariant hardware signature. Authentic unique devices earn full reward privileges!";
 
 var kbd = [
-  [{ text: "🔐 Verify / Refresh Device", callback_data: "/verify_prompt" }],
   [{ text: "🏠 Main Menu", callback_data: "/start" }]
 ];
 

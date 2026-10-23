@@ -22,6 +22,17 @@ try {
   var channelUrl = "https://t.me/BotsByAntares";
   var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
+  // 0. Strict Maintenance Mode Gate
+  var adm = Bot.getProperty("adminID");
+  var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
+  if (Bot.getProperty("maintenance_mode") && !isAdm) {
+    var maintText = "🚧 <b>System Under Maintenance!</b> 🛠️\n\n" +
+      "Our engineers are currently upgrading the bot servers and stocking up fresh Gmails.\n\n" +
+      "⏱️ <i>All services will be back online shortly. Thank you for your patience!</i>";
+    Bot.sendMessage(maintText, { parse_mode: "HTML" });
+    return;
+  }
+
   // 🗑️ Delete previous bot message for a clean chat
   var lastBotMsg = User.getProperty("last_bot_msg_id");
   if (lastBotMsg) {
@@ -104,7 +115,11 @@ try {
     }
   }
 
-  // 4. Check Mandatory Channel Join (@BotsByAntares)
+  // 4. Check Mandatory Channel Join (Multi-Channel Gate)
+  var chs = Bot.getProperty("mandatory_channels");
+  if (!chs || !Array.isArray(chs) || chs.length === 0) {
+    chs = [Bot.getProperty("mandatory_channel", "@BotsByAntares")];
+  }
   var isJoined = User.getProperty("channel_joined");
   if (!isJoined) {
     var welcomeText = "👋 <b>Welcome to @GmailRewardRobot!</b> 💎\n\n" +
@@ -113,14 +128,18 @@ try {
       "🛡️ <b>Strict Anti-Cheat Protected:</b> Every referral must pass hardware & IP integrity verification. Duplicate accounts on the same device receive no reward!\n\n" +
       "━━━━━━━━━━━━━━━━━━━━\n" +
       "📢 <b>Step 1: Mandatory Channel Join</b>\n" +
-      "You must join our official announcements channel to proceed:\n\n" +
-      "👉 <a href='" + channelUrl + "'>" + channelUsername + "</a>\n\n" +
-      "👇 <b>Please join the channel below and tap Verify:</b>";
+      "You must join our official announcements channels to proceed:\n\n";
 
-    var keyboard = [
-      [{ text: "📢 Join " + channelUsername, url: channelUrl }],
-      [{ text: "✅ Verify Membership", callback_data: "/check_join" }]
-    ];
+    var keyboard = [];
+    for (var c = 0; c < chs.length; c++) {
+      var cHandle = chs[c];
+      var cUrl = "https://t.me/" + cHandle.replace("@", "");
+      welcomeText += (c + 1) + ". <a href='" + cUrl + "'>" + cHandle + "</a>\n";
+      keyboard.push([{ text: "📢 Join " + cHandle, url: cUrl }]);
+    }
+
+    welcomeText += "\n👇 <b>Please join every channel above and tap Verify:</b>";
+    keyboard.push([{ text: "✅ Verify All Memberships", callback_data: "/check_join" }]);
 
     Api.sendMessage({
       chat_id: chatId,
@@ -170,7 +189,7 @@ try {
     "👇 <b>Choose an action from the menu below:</b>";
 
   Bot.sendKeyboard(
-    "💰 Balance,📧 GetMail\n👥 Refer & Earn,📜 My Mails\n🎯 Custom Order,📦 Live Stock\n🏆 Leaderboard,🛡️ My Device\nℹ️ Rules & FAQ,💬 Support",
+    "💰 Balance,📧 GetMail\n👥 Refer & Earn,📜 My Mails\n🎯 Custom Order,📦 Live Stock\n🏆 Leaderboard,🛡️ My Device\n🎟️ Promo Code,💬 Support\nℹ️ Rules & FAQ",
     dashboardText
   );
 

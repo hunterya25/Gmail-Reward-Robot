@@ -35,31 +35,56 @@ var stockRec = Bot.getProperty("Stock_Recovery") || [];
 var stock2FA = Bot.getProperty("Stock_2FA") || [];
 var totalStock = stockNorm.length + stockRec.length + stock2FA.length;
 
-var stockText = "📦 <b>Stock & Inventory Management Division</b> ⚡️\n\n" +
-  "• 🟢 <b>Normal Fresh Gmails:</b> <b>" + stockNorm.length + " Accounts</b>\n" +
-  "• 🛡️ <b>Recovery Attached Gmails:</b> <b>" + stockRec.length + " Accounts</b>\n" +
-  "• 🔐 <b>2-Step Verification (2FA) Gmails:</b> <b>" + stock2FA.length + " Accounts</b>\n" +
+var stateNorm = Bot.getProperty("CategoryState_normal") || "ON";
+var stateRec = Bot.getProperty("CategoryState_recovery") || "ON";
+var state2FA = Bot.getProperty("CategoryState_2fa") || "ON";
+
+function formatStateBadge(st) {
+  if (st === "OFF") return "⏸️ OFF (Disabled)";
+  if (st === "PRIVATE") return "👻 PRIVATE (Hidden)";
+  return "🟢 ON (Public)";
+}
+
+var stockText = "📦 <b>Stock & Category Visibility Control Division</b> ⚡️\n\n" +
+  "• 🟢 <b>Normal Fresh:</b> <b>" + stockNorm.length + " In Stock</b> | <code>" + formatStateBadge(stateNorm) + "</code>\n" +
+  "• 🛡️ <b>Recovery Attached:</b> <b>" + stockRec.length + " In Stock</b> | <code>" + formatStateBadge(stateRec) + "</code>\n" +
+  "• 🔐 <b>2-Step Verification:</b> <b>" + stock2FA.length + " In Stock</b> | <code>" + formatStateBadge(state2FA) + "</code>\n" +
   "━━━━━━━━━━━━━━━━━━━━\n" +
-  "📊 <b>Total Inventory:</b> <b>" + totalStock + " Accounts</b>\n\n" +
-  "⚡️ <b>Quick Commands Available:</b>\n" +
-  "• <code>/add_normal email:pass</code> (or multiple lines)\n" +
-  "• <code>/add_recovery email:pass:recovery</code> (or multiple lines)\n" +
-  "• <code>/add_2fa email:pass:2fakey</code> (or multiple lines)\n" +
-  "• <code>/stock &lt;category&gt;</code> — Inspect detailed accounts\n" +
-  "• <code>/wipe_stock &lt;category&gt;</code> — Clear inventory for a category\n\n" +
-  "👇 <i>Or tap an action below to upload stock:</i>";
+  "📊 <b>Total Pooled Stock:</b> <b>" + totalStock + " Accounts</b>\n\n" +
+  "💡 <i>Category Status Guide:</i>\n" +
+  "• <b>ON:</b> Normal public view & claims.\n" +
+  "• <b>OFF:</b> Shows 'Temporarily Disabled' notice on click.\n" +
+  "• <b>PRIVATE:</b> Completely hidden from all users (zero clue/trace)!\n\n" +
+  "👇 <i>Tap buttons below to toggle state or upload stock:</i>";
 
 var kbd = [
+  // Normal State Row
   [
-    { text: "🟢 Add Normal Gmails", callback_data: "/prompt_add_normal" },
-    { text: "🛡️ Add Recovery Gmails", callback_data: "/prompt_add_recovery" }
+    { text: (stateNorm === "ON" ? "🟢 Normal: ON ✓" : "🟢 Set Normal ON"), callback_data: "/set_cat_state normal on" },
+    { text: (stateNorm === "OFF" ? "⏸️ OFF ✓" : "⏸️ OFF"), callback_data: "/set_cat_state normal off" },
+    { text: (stateNorm === "PRIVATE" ? "👻 PRIVATE ✓" : "👻 PRIVATE"), callback_data: "/set_cat_state normal private" }
+  ],
+  // Recovery State Row
+  [
+    { text: (stateRec === "ON" ? "🛡️ Recovery: ON ✓" : "🛡️ Set Rec ON"), callback_data: "/set_cat_state recovery on" },
+    { text: (stateRec === "OFF" ? "⏸️ OFF ✓" : "⏸️ OFF"), callback_data: "/set_cat_state recovery off" },
+    { text: (stateRec === "PRIVATE" ? "👻 PRIVATE ✓" : "👻 PRIVATE"), callback_data: "/set_cat_state recovery private" }
+  ],
+  // 2FA State Row
+  [
+    { text: (state2FA === "ON" ? "🔐 2FA: ON ✓" : "🔐 Set 2FA ON"), callback_data: "/set_cat_state 2fa on" },
+    { text: (state2FA === "OFF" ? "⏸️ OFF ✓" : "⏸️ OFF"), callback_data: "/set_cat_state 2fa off" },
+    { text: (state2FA === "PRIVATE" ? "👻 PRIVATE ✓" : "👻 PRIVATE"), callback_data: "/set_cat_state 2fa private" }
+  ],
+  // Stock Upload Rows
+  [
+    { text: "🟢 Add Normal", callback_data: "/prompt_add_normal" },
+    { text: "🛡️ Add Recovery", callback_data: "/prompt_add_recovery" },
+    { text: "🔐 Add 2FA", callback_data: "/prompt_add_2fa" }
   ],
   [
-    { text: "🔐 Add 2FA Gmails", callback_data: "/prompt_add_2fa" },
-    { text: "📦 Inspect Inventory (" + totalStock + ")", callback_data: "/stock" }
-  ],
-  [
-    { text: "🧹 Wipe Empty / Stale Stock", callback_data: "/prompt_wipe_stock" }
+    { text: "📦 Inspect Inventory (" + totalStock + ")", callback_data: "/stock" },
+    { text: "🧹 Wipe Stock", callback_data: "/prompt_wipe_stock" }
   ],
   [{ text: "🔙 Back to Admin Hub", callback_data: "/admin" }]
 ];
