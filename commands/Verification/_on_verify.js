@@ -350,6 +350,6 @@ var menuText = "👋 <b>Welcome to @GmailRewardRobot!</b> ⚡️\n\n" +
   "👇 <i>Select an option below to claim Gmails or invite friends:</i>";
 
 Bot.sendKeyboard(
-  "💰 Balance,📧 GetMail\n👥 Refer & Earn,🎟️ Promo Code\n🎯 Custom Order,📦 Live Stock\n🏆 Leaderboard,🛡️ My Device\n💬 Support,ℹ️ Rules & FAQ",
+  "💰 Balance,📧 GetMail\n👥 Refer & Earn,🎟️ Promo Code\n📦 Live Stock,🏆 Leaderboard\n🛡️ My Device,💬 Support\nℹ️ Rules & FAQ",
   menuText
 );
