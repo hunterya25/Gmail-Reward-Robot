@@ -36,14 +36,33 @@ var activeList = [];
 
 for (var i = 0; i < suspList.length; i++) {
   var uid = suspList[i];
+  var rawUntil = Bot.getProperty("SuspendedUntil_" + uid);
+  var untilMs = rawUntil ? parseInt(rawUntil) : 0;
   var data = Bot.getProperty("SuspendedUser_" + uid);
-  if (data && data.suspended_until) {
-    if (now >= data.suspended_until) {
-      // Auto-expired
+  if (typeof data === "string" && data !== "null" && data !== "undefined" && data !== "false") {
+    try { data = JSON.parse(data); } catch (e) { data = null; }
+  }
+  if (!untilMs && data && data.suspended_until) {
+    untilMs = parseInt(data.suspended_until) || 0;
+  }
+
+  if (untilMs && !isNaN(untilMs)) {
+    if (now >= untilMs) {
+      // Auto-expired: clear
+      Bot.setProperty("SuspendedUntil_" + uid, 0, "integer");
       Bot.setProperty("SuspendedUser_" + uid, null);
     } else {
+      if (!data) {
+        data = { user_id: uid, reason: "Restricted", duration: "Active", unban_at_ist: "" };
+      }
+      data.user_id = uid;
+      data.suspended_until = untilMs;
       activeList.push(data);
     }
+  } else {
+    // Expired or cleared: prune
+    Bot.setProperty("SuspendedUntil_" + uid, 0, "integer");
+    Bot.setProperty("SuspendedUser_" + uid, null);
   }
 }
 

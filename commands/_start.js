@@ -52,13 +52,36 @@ try {
   }
 
   // Strict Suspension Check
-  var suspData = Bot.getProperty("SuspendedUser_" + user.telegramid);
-  if (suspData && !isAdm) {
-    var nowMs = Date.now();
-    if (nowMs >= suspData.suspended_until) {
+  var rawUntil = Bot.getProperty("SuspendedUntil_" + user.telegramid);
+  var untilMs = rawUntil ? parseInt(rawUntil) : 0;
+  var nowMs = Date.now();
+
+  if (!untilMs) {
+    var rawData = Bot.getProperty("SuspendedUser_" + user.telegramid);
+    if (typeof rawData === "string" && rawData !== "null" && rawData !== "undefined" && rawData !== "false") {
+      try { rawData = JSON.parse(rawData); } catch (e) { rawData = null; }
+    }
+    if (rawData && rawData.suspended_until) {
+      untilMs = parseInt(rawData.suspended_until) || 0;
+    }
+  }
+
+  if (untilMs && !isNaN(untilMs) && !isAdm) {
+    if (nowMs >= untilMs) {
+      // ✅ TIME UP! Automatically Unsuspended!
+      Bot.setProperty("SuspendedUntil_" + user.telegramid, 0, "integer");
       Bot.setProperty("SuspendedUser_" + user.telegramid, null);
+      var sList = Bot.getProperty("SuspendedUsersList") || [];
+      var cleanSList = [];
+      for (var si = 0; si < sList.length; si++) {
+        if (sList[si] && sList[si].toString() !== user.telegramid.toString()) {
+          cleanSList.push(sList[si].toString());
+        }
+      }
+      Bot.setProperty("SuspendedUsersList", cleanSList, "json");
+      // Access is restored! Flow continues to show the main dashboard.
     } else {
-      var remMs = suspData.suspended_until - nowMs;
+      var remMs = untilMs - nowMs;
       var remMins = Math.ceil(remMs / 60000);
       var remH = Math.floor(remMins / 60);
       var remM = remMins % 60;
@@ -66,15 +89,28 @@ try {
       if (remH > 0) remDisplay += remH + "h ";
       remDisplay += remM + "m (" + remMins + " Minutes)";
 
+      var sData = Bot.getProperty("SuspendedUser_" + user.telegramid);
+      if (typeof sData === "string" && sData !== "null" && sData !== "undefined") {
+        try { sData = JSON.parse(sData); } catch (e) { sData = null; }
+      }
+      var sReason = (sData && sData.reason) ? sData.reason : "Temporary restriction by Administration";
+      var sDuration = (sData && sData.duration) ? sData.duration : "Temporary";
+      var sUnbanIST = (sData && sData.unban_at_ist) ? sData.unban_at_ist : "";
+
       var suspNotice = "⛔ <b>Account Temporarily Suspended!</b> ⏳\n\n" +
         "Aapka account access @GmailRewardRobot par temporary suspend kar diya gaya hai.\n\n" +
-        "⚠️ <b>Kyu suspend hua (Reason):</b>\n<i>" + suspData.reason + "</i>\n\n" +
+        "⚠️ <b>Kyu suspend hua (Reason):</b>\n<i>" + sReason + "</i>\n\n" +
         "━━━━━━━━━━━━━━━━━━━━\n" +
-        "⏱️ <b>Suspension Duration:</b> <b>" + suspData.duration + "</b>\n" +
-        "📅 <b>Kab theek hoga (IST Date & Time):</b>\n<b>" + suspData.unban_at_ist + "</b>\n" +
-        "⏳ <b>Kitna time bacha hai:</b> <b>" + remDisplay + "</b>\n\n" +
+        "⏱️ <b>Suspension Duration:</b> <b>" + sDuration + "</b>\n";
+
+      if (sUnbanIST) {
+        suspNotice += "📅 <b>Kab theek hoga (IST Date & Time):</b>\n<b>" + sUnbanIST + "</b>\n";
+      }
+
+      suspNotice += "⏳ <b>Kitna time bacha hai:</b> <b>" + remDisplay + "</b>\n\n" +
         "━━━━━━━━━━━━━━━━━━━━\n" +
         "<i>💡 Time pura hote hi aapka account automatically unlock ho jayega!</i>";
+
       Bot.sendMessage(suspNotice, { parse_mode: "HTML" });
       return;
     }

@@ -130,7 +130,10 @@ var suspData = {
   unban_at_ist: unbanIST
 };
 
-// 1. Save suspension property
+// 1. Save suspension timestamp as integer (fast & reliable expiration check)
+Bot.setProperty("SuspendedUntil_" + targetId, unbanTimeMs, "integer");
+
+// 2. Save detailed suspension property
 Bot.setProperty("SuspendedUser_" + targetId, suspData, "json");
 
 // 2. Add to SuspendedUsersList

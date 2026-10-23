@@ -64,15 +64,22 @@ if (isBannedProp === false || isBannedProp === "false") {
 }
 
 // Suspension evaluation
+var rawUntil = Bot.getProperty("SuspendedUntil_" + targetId);
+var untilMs = rawUntil ? parseInt(rawUntil) : 0;
 var suspData = Bot.getProperty("SuspendedUser_" + targetId);
+if (typeof suspData === "string" && suspData !== "null" && suspData !== "undefined" && suspData !== "false") {
+  try { suspData = JSON.parse(suspData); } catch (e) { suspData = null; }
+}
+if (!untilMs && suspData && suspData.suspended_until) {
+  untilMs = parseInt(suspData.suspended_until) || 0;
+}
+
 var isTargetSuspended = false;
 var suspInfo = "";
-if (suspData && suspData.suspended_until) {
-  var now = Date.now();
-  if (now < suspData.suspended_until) {
-    isTargetSuspended = true;
-    suspInfo = "⏳ SUSPENDED (Until: " + suspData.unban_at_ist + ")";
-  }
+if (untilMs && !isNaN(untilMs) && Date.now() < untilMs) {
+  isTargetSuspended = true;
+  var liftTime = (suspData && suspData.unban_at_ist) ? suspData.unban_at_ist : "Active";
+  suspInfo = "⏳ SUSPENDED (Until: " + liftTime + ")";
 }
 
 var statusStr = "✅ ACTIVE";

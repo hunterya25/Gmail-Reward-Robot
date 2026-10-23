@@ -34,7 +34,10 @@ if (!input) {
 
 var targetId = input.split(" ")[0].trim();
 
-// 1. Remove suspension property
+// 1. Reset suspension timestamp to 0
+Bot.setProperty("SuspendedUntil_" + targetId, 0, "integer");
+
+// 2. Remove suspension property
 Bot.setProperty("SuspendedUser_" + targetId, null);
 
 // 2. Remove from SuspendedUsersList
