@@ -19,10 +19,9 @@ CMD*/
 var adm = Bot.getProperty("adminID");
 
 if (!adm) {
-  // First time setup: allow current user to claim admin
   Bot.setProperty("adminID", user.telegramid, "integer");
-  Bot.sendMessage("👑 <b>Admin access configured for user ID: " + user.telegramid + "</b>", { parse_mode: "HTML" });
   adm = user.telegramid;
+  Bot.sendMessage("👑 <b>Admin access configured for ID: " + user.telegramid + "</b>", { parse_mode: "HTML" });
 }
 
 if (user.telegramid != adm) {
@@ -30,37 +29,64 @@ if (user.telegramid != adm) {
   return;
 }
 
-var allUsers = Bot.getProperty("all_bot_users", []);
-var totalUsersCount = allUsers ? allUsers.length : 0;
+var chatId = (chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-var gmailStock = Bot.getProperty("GmailStock", []);
-var stockCount = gmailStock ? gmailStock.length : 0;
+// Delete previous message if callback
+if (request && request.message && request.message.message_id) {
+  try {
+    Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });
+  } catch (e) {}
+}
 
-var currentWebapp = Bot.getProperty("mini_app_url", "https://antares-bots.github.io/gmail-reward-verifier");
+// Fetch Quick Stats
+var allUsers = Bot.getProperty("all_bot_users") || [];
+var totalUsers = allUsers.length;
 
-var adminPanelText = "👑 <b>GmailRewardBot Admin Dashboard</b> 🛠️\n\n" +
-  "📊 <b>Bot Metrics:</b>\n" +
-  "• 👥 <b>Total Registered Users:</b> <b>" + totalUsersCount + "</b>\n" +
-  "• 📦 <b>Gmail Stock Remaining:</b> <b>" + stockCount + " Accounts</b>\n" +
-  "• 🌐 <b>Mini App Verifier URL:</b>\n<code>" + currentWebapp + "</code>\n\n" +
+var stockNorm = (Bot.getProperty("Stock_Normal") || Bot.getProperty("GmailStock") || []).length;
+var stockRec = (Bot.getProperty("Stock_Recovery") || []).length;
+var stock2FA = (Bot.getProperty("Stock_2FA") || []).length;
+var totalStock = stockNorm + stockRec + stock2FA;
+
+var pendingOrders = (Bot.getProperty("PendingCustomOrders") || []).length;
+var isMaint = Bot.getProperty("maintenance_mode") ? "🔴 ACTIVE (Locked)" : "🟢 Offline (Normal)";
+var curChannel = Bot.getProperty("mandatory_channel", "@BotsByAntares");
+
+var hubText = "👑 <b>@GmailRewardRobot Master Control Center</b> ⚡️\n\n" +
+  "📊 <b>Platform Quick Metrics:</b>\n" +
+  "• 👥 <b>Total Registered Members:</b> <b>" + totalUsers + "</b>\n" +
+  "• 📦 <b>Total Live Gmail Stock:</b> <b>" + totalStock + " Accounts</b> (🟢 " + stockNorm + " | 🛡️ " + stockRec + " | 🔐 " + stock2FA + ")\n" +
+  "• 🎯 <b>Pending Custom Orders:</b> <b>" + pendingOrders + "</b>\n" +
+  "• 📢 <b>Active Channel Gate:</b> <code>" + curChannel + "</code>\n" +
+  "• 🚧 <b>Maintenance Mode:</b> " + isMaint + "\n\n" +
   "━━━━━━━━━━━━━━━━━━━━\n" +
-  "⚡️ <b>Admin Commands:</b>\n" +
-  "• ➕ <code>/add_gmail email:password:recovery</code> — Add accounts to stock (or multiple lines)\n" +
-  "• 🌐 <code>/set_webapp https://...</code> — Update the Verification Mini App URL\n" +
-  "• 📦 <code>/stock</code> — View remaining inventory details\n" +
-  "• 🔄 <code>/clear_device DEV_ID</code> — Unbind a device for testing\n" +
-  "• ⚠️ <code>/reset_all</code> — Wipe all devices, IPs & user data to test from scratch\n" +
-  "• 📢 <code>/broadcast &lt;message&gt;</code> — Send message to all users";
+  "👇 <i>Select a specialized management division below:</i>";
 
 var kbd = [
-  [{ text: "➕ Add Gmails to Stock", callback_data: "/add_gmail_prompt" }],
-  [{ text: "📦 Inspect Stock (" + stockCount + ")", callback_data: "/stock" }],
-  [{ text: "⚠️ Reset All Bot Data", callback_data: "/reset_all" }]
+  [
+    { text: "👥 Users Management", callback_data: "/admin_users" },
+    { text: "📦 Stock & Inventory", callback_data: "/admin_stock" }
+  ],
+  [
+    { text: "🎯 Custom Orders (" + pendingOrders + ")", callback_data: "/admin_orders" },
+    { text: "💰 Pricing & Rates", callback_data: "/admin_pricing" }
+  ],
+  [
+    { text: "🤝 Referrals & Anti-Cheat", callback_data: "/admin_refers" },
+    { text: "⚙️ Bot & Maintenance", callback_data: "/admin_settings" }
+  ],
+  [
+    { text: "📢 Broadcast Suite", callback_data: "/admin_broadcast" },
+    { text: "📊 Platform Analytics", callback_data: "/admin_stats" }
+  ],
+  [
+    { text: "⚠️ Full System Reset", callback_data: "/reset_all" },
+    { text: "🔄 Refresh Hub", callback_data: "/admin" }
+  ]
 ];
 
 Api.sendMessage({
-  text: adminPanelText,
+  chat_id: chatId,
+  text: hubText,
   parse_mode: "HTML",
-  disable_web_page_preview: true,
   reply_markup: { inline_keyboard: kbd }
 });

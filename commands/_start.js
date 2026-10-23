@@ -170,7 +170,7 @@ try {
     "👇 <b>Choose an action from the menu below:</b>";
 
   Bot.sendKeyboard(
-    "💰 Balance,📧 GetMail\n👥 Refer & Earn",
+    "💰 Balance,📧 GetMail\n👥 Refer & Earn,📜 My Mails\n🎯 Custom Order,📦 Live Stock\n🏆 Leaderboard,🛡️ My Device\nℹ️ Rules & FAQ,💬 Support",
     dashboardText
   );
 

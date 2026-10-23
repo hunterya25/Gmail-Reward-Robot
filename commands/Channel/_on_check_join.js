@@ -53,14 +53,16 @@ if (isJoined) {
 } else {
   User.setProperty("channel_joined", false, "boolean");
 
+  var targetChannel = Bot.getProperty("mandatory_channel", "@BotsByAntares");
+  var channelUrl = "https://t.me/" + targetChannel.replace("@", "");
   var failText = "⚠️ <b>Channel Membership Required!</b>\n\n" +
-    "You have not joined <b>@BotsByAntares</b> yet!\n\n" +
+    "You have not joined <b>" + targetChannel + "</b> yet!\n\n" +
     "📢 <b>Mandatory Channel:</b>\n" +
-    "👉 <a href='https://t.me/BotsByAntares'>@BotsByAntares</a>\n\n" +
+    "👉 <a href='" + channelUrl + "'>" + targetChannel + "</a>\n\n" +
     "<i>Please join the channel first, then tap Verify below:</i>";
 
   var keyboard = [
-    [{ text: "📢 Join @BotsByAntares", url: "https://t.me/BotsByAntares" }],
+    [{ text: "📢 Join " + targetChannel, url: channelUrl }],
     [{ text: "✅ Verify Membership", callback_data: "/check_join" }]
   ];
 

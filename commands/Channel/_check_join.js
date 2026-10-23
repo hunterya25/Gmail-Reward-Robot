@@ -16,7 +16,7 @@
   group: 
 CMD*/
 
-var channelUsername = "@BotsByAntares";
+var channelUsername = Bot.getProperty("mandatory_channel", "@BotsByAntares");
 
 if (request && request.id) {
   Api.answerCallbackQuery({

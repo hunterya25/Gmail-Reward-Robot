@@ -23,25 +23,66 @@ if (user.telegramid != adm) {
 }
 
 if (request && request.id) {
-  Api.answerCallbackQuery({ callback_query_id: request.id });
+  try {
+    Api.answerCallbackQuery({ callback_query_id: request.id });
+  } catch (e) {}
 }
 
-var currentStock = Bot.getProperty("GmailStock", []);
-if (!currentStock || currentStock.length === 0) {
-  Bot.sendMessage("📦 <b>Current Gmail Stock: 0 Accounts</b>\n\nUse <code>/add_gmail email:pass:recovery</code> to load stock.", { parse_mode: "HTML" });
-  return;
+var catParam = params ? params.trim().toLowerCase() : "";
+
+var stockNorm = Bot.getProperty("Stock_Normal") || Bot.getProperty("GmailStock") || [];
+var stockRec = Bot.getProperty("Stock_Recovery") || [];
+var stock2FA = Bot.getProperty("Stock_2FA") || [];
+var totalStock = stockNorm.length + stockRec.length + stock2FA.length;
+
+var msg = "📦 <b>Comprehensive Gmail Stock Audit</b> 📊\n\n" +
+  "• 🟢 <b>Normal Fresh:</b> <b>" + stockNorm.length + "</b>\n" +
+  "• 🛡️ <b>Recovery Attached:</b> <b>" + stockRec.length + "</b>\n" +
+  "• 🔐 <b>2-Step Verification (2FA):</b> <b>" + stock2FA.length + "</b>\n" +
+  "━━━━━━━━━━━━━━━━━━━━\n" +
+  "📊 <b>Total Pooled Stock:</b> <b>" + totalStock + " Accounts</b>\n\n";
+
+var inspectArr = [];
+var inspectLabel = "";
+
+if (catParam === "recovery") {
+  inspectArr = stockRec;
+  inspectLabel = "🛡️ Recovery Attached Accounts";
+} else if (catParam === "2fa") {
+  inspectArr = stock2FA;
+  inspectLabel = "🔐 2FA Verified Accounts";
+} else {
+  inspectArr = stockNorm;
+  inspectLabel = "🟢 Normal Fresh Accounts";
 }
 
-var msg = "📦 <b>Active Gmail Inventory (" + currentStock.length + " Available)</b>\n\n";
+msg += "<b>Recent in " + inspectLabel + " (" + inspectArr.length + "):</b>\n";
 
-for (var i = 0; i < currentStock.length && i < 15; i++) {
-  var acc = currentStock[i];
-  var maskedPass = acc.password ? (acc.password.substring(0, 2) + "••••" + acc.password.substring(acc.password.length - 2)) : "••••";
-  msg += "<b>#" + (i + 1) + "</b> <code>" + acc.email + "</code> | Pass: <code>" + maskedPass + "</code>\n";
+if (inspectArr.length === 0) {
+  msg += "<i>No accounts currently loaded in this category.</i>\n";
+} else {
+  for (var i = 0; i < Math.min(inspectArr.length, 10); i++) {
+    var item = inspectArr[i];
+    var maskedPass = item.password ? (item.password.substring(0, 2) + "••••" + item.password.slice(-2)) : "••••";
+    msg += "<b>#" + (i + 1) + "</b> <code>" + item.email + "</code> | Pass: <code>" + maskedPass + "</code>\n";
+  }
+  if (inspectArr.length > 10) {
+    msg += "\n<i>...and " + (inspectArr.length - 10) + " more in category pool.</i>\n";
+  }
 }
 
-if (currentStock.length > 15) {
-  msg += "\n<i>...and " + (currentStock.length - 15) + " more accounts in pool.</i>";
-}
+var kbd = [
+  [
+    { text: "🟢 Normal (" + stockNorm.length + ")", callback_data: "/stock normal" },
+    { text: "🛡️ Recovery (" + stockRec.length + ")", callback_data: "/stock recovery" },
+    { text: "🔐 2FA (" + stock2FA.length + ")", callback_data: "/stock 2fa" }
+  ],
+  [{ text: "🔙 Back to Stock Division", callback_data: "/admin_stock" }]
+];
 
-Bot.sendMessage(msg, { parse_mode: "HTML" });
+Api.sendMessage({
+  chat_id: chat ? chat.chatid : user.telegramid,
+  text: msg,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: kbd }
+});
