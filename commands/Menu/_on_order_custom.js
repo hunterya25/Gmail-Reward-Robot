@@ -23,6 +23,14 @@ if (!message || message.indexOf("/") === 0) {
   return;
 }
 
+var adm = Bot.getProperty("adminID");
+var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
+var stateCustom = Bot.getProperty("CategoryState_custom") || "ON";
+if (stateCustom !== "ON" && !isAdm) {
+  Bot.sendMessage("⚠️ <b>Custom Orders Closed:</b> This service is currently disabled by administration.", { parse_mode: "HTML" });
+  return;
+}
+
 var currentBalance = 0;
 var balanceRes = null;
 try {

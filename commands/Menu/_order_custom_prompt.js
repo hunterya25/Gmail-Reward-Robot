@@ -26,6 +26,13 @@ if (Bot.getProperty("maintenance_mode") && !isAdm) {
   return;
 }
 
+// Category State Check (ON / OFF / PRIVATE)
+var stateCustom = Bot.getProperty("CategoryState_custom") || "ON";
+if (stateCustom !== "ON" && !isAdm) {
+  Bot.sendMessage("⚠️ <b>Custom Orders Temporarily Disabled!</b>\n\nCustom Gmail order service has been paused by administration. Please check back later or browse ready instant stock in /getmail!", { parse_mode: "HTML" });
+  return;
+}
+
 // 🗑️ Delete previous bot message
 var lastBotMsg = User.getProperty("last_bot_msg_id");
 if (lastBotMsg) {

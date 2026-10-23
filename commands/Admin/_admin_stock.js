@@ -38,6 +38,7 @@ var totalStock = stockNorm.length + stockRec.length + stock2FA.length;
 var stateNorm = Bot.getProperty("CategoryState_normal") || "ON";
 var stateRec = Bot.getProperty("CategoryState_recovery") || "ON";
 var state2FA = Bot.getProperty("CategoryState_2fa") || "ON";
+var stateCustom = Bot.getProperty("CategoryState_custom") || "ON";
 
 function formatStateBadge(st) {
   if (st === "OFF") return "⏸️ OFF (Disabled)";
@@ -49,6 +50,7 @@ var stockText = "📦 <b>Stock & Category Visibility Control Division</b> ⚡️
   "• 🟢 <b>Normal Fresh:</b> <b>" + stockNorm.length + " In Stock</b> | <code>" + formatStateBadge(stateNorm) + "</code>\n" +
   "• 🛡️ <b>Recovery Attached:</b> <b>" + stockRec.length + " In Stock</b> | <code>" + formatStateBadge(stateRec) + "</code>\n" +
   "• 🔐 <b>2-Step Verification:</b> <b>" + stock2FA.length + " In Stock</b> | <code>" + formatStateBadge(state2FA) + "</code>\n" +
+  "• 🎯 <b>Custom Order:</b> <b>On-Demand</b> | <code>" + formatStateBadge(stateCustom) + "</code>\n" +
   "━━━━━━━━━━━━━━━━━━━━\n" +
   "📊 <b>Total Pooled Stock:</b> <b>" + totalStock + " Accounts</b>\n\n" +
   "💡 <i>Category Status Guide:</i>\n" +
@@ -75,6 +77,12 @@ var kbd = [
     { text: (state2FA === "ON" ? "🔐 2FA: ON ✓" : "🔐 Set 2FA ON"), callback_data: "/set_cat_state 2fa on" },
     { text: (state2FA === "OFF" ? "⏸️ OFF ✓" : "⏸️ OFF"), callback_data: "/set_cat_state 2fa off" },
     { text: (state2FA === "PRIVATE" ? "👻 PRIVATE ✓" : "👻 PRIVATE"), callback_data: "/set_cat_state 2fa private" }
+  ],
+  // Custom State Row
+  [
+    { text: (stateCustom === "ON" ? "🎯 Custom: ON ✓" : "🎯 Set Custom ON"), callback_data: "/set_cat_state custom on" },
+    { text: (stateCustom === "OFF" ? "⏸️ OFF ✓" : "⏸️ OFF"), callback_data: "/set_cat_state custom off" },
+    { text: (stateCustom === "PRIVATE" ? "👻 PRIVATE ✓" : "👻 PRIVATE"), callback_data: "/set_cat_state custom private" }
   ],
   // Stock Upload Rows
   [

@@ -90,6 +90,7 @@ var priceCustom = Bot.getProperty("Price_Custom") || 5;
 var stateNorm = Bot.getProperty("CategoryState_normal") || "ON";
 var stateRec = Bot.getProperty("CategoryState_recovery") || "ON";
 var state2FA = Bot.getProperty("CategoryState_2fa") || "ON";
+var stateCustom = Bot.getProperty("CategoryState_custom") || "ON";
 
 // Fetch Stocks
 var stockNormalArr = Bot.getProperty("Stock_Normal") || Bot.getProperty("GmailStock") || [];
@@ -160,13 +161,23 @@ if (state2FA !== "PRIVATE") {
   }
 }
 
-// 4. Custom Gmail Order (Always available)
-dispenserText += "🎯 <b>Custom Gmail Order</b>\n" +
-  "• Rate: <b>" + priceCustom + " Credits</b> | Turnaround: <b>Within 1 Hour</b>\n" +
-  "• Choose your own custom name, username, 2FA & app password!\n\n" +
-  "👇 <b>Select an option below to claim or order:</b>";
+// 4. Custom Gmail Order
+if (stateCustom !== "PRIVATE") {
+  if (stateCustom === "ON") {
+    dispenserText += "🎯 <b>Custom Gmail Order</b>\n" +
+      "• Rate: <b>" + priceCustom + " Credits</b> | Turnaround: <b>Within 1 Hour</b>\n" +
+      "• Choose your own custom name, username, 2FA & app password!\n\n";
+    keyboard.push([{ text: "🎯 Order Custom Gmail (" + priceCustom + " Cr)", callback_data: "/order_custom" }]);
+  } else {
+    // OFF
+    dispenserText += "🎯 <b>Custom Gmail Order</b>\n" +
+      "• Status: <i>⚠️ Temporarily Disabled</i>\n\n";
+    keyboard.push([{ text: "⏸️ Custom Order — Temp Disabled", callback_data: "/cat_disabled custom" }]);
+  }
+}
 
-keyboard.push([{ text: "🎯 Order Custom Gmail (" + priceCustom + " Cr)", callback_data: "/order_custom" }]);
+dispenserText += "👇 <b>Select an option below to claim or order:</b>";
+
 keyboard.push([
   { text: "📜 My Claimed Mails", callback_data: "/my_mails" },
   { text: "🤝 Refer Friends (+1 Cr)", callback_data: "/refer" }

@@ -29,15 +29,15 @@ if (!input && message) {
 
 var parts = input.split(" ");
 if (parts.length < 2) {
-  Bot.sendMessage("ℹ️ <b>Usage:</b> <code>/set_cat_state normal|recovery|2fa on|off|private</code>", { parse_mode: "HTML" });
+  Bot.sendMessage("ℹ️ <b>Usage:</b> <code>/set_cat_state normal|recovery|2fa|custom on|off|private</code>", { parse_mode: "HTML" });
   return;
 }
 
 var targetCat = parts[0];
 var targetState = parts[1].toUpperCase();
 
-if (targetCat !== "normal" && targetCat !== "recovery" && targetCat !== "2fa") {
-  Bot.sendMessage("❌ Unknown category. Must be: <code>normal</code>, <code>recovery</code>, or <code>2fa</code>", { parse_mode: "HTML" });
+if (targetCat !== "normal" && targetCat !== "recovery" && targetCat !== "2fa" && targetCat !== "custom") {
+  Bot.sendMessage("❌ Unknown category. Must be: <code>normal</code>, <code>recovery</code>, <code>2fa</code>, or <code>custom</code>", { parse_mode: "HTML" });
   return;
 }
 

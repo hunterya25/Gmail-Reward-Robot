@@ -39,6 +39,7 @@ var stock2FAArr = Bot.getProperty("Stock_2FA") || [];
 var stateNorm = Bot.getProperty("CategoryState_normal") || "ON";
 var stateRec = Bot.getProperty("CategoryState_recovery") || "ON";
 var state2FA = Bot.getProperty("CategoryState_2fa") || "ON";
+var stateCustom = Bot.getProperty("CategoryState_custom") || "ON";
 
 var pNormal = Bot.getProperty("Price_Normal") || 1;
 var pRecovery = Bot.getProperty("Price_Recovery") || 2;
@@ -85,10 +86,18 @@ if (state2FA !== "PRIVATE") {
   }
 }
 
-stockMsg += "🎯 <b>Custom Gmail Orders:</b>\n" +
-  "• Status: <b>🟢 Open (1-Hour Delivery)</b>\n" +
-  "• Rate: <code>" + pCustom + " Credits</code>\n\n" +
-  "━━━━━━━━━━━━━━━━━━━━\n" +
+if (stateCustom !== "PRIVATE") {
+  if (stateCustom === "ON") {
+    stockMsg += "🎯 <b>Custom Gmail Orders:</b>\n" +
+      "• Status: <b>🟢 Open (1-Hour Delivery)</b>\n" +
+      "• Rate: <code>" + pCustom + " Credits</code>\n\n";
+  } else {
+    stockMsg += "🎯 <b>Custom Gmail Orders:</b>\n" +
+      "• Status: <i>⚠️ Temporarily Disabled</i>\n\n";
+  }
+}
+
+stockMsg += "━━━━━━━━━━━━━━━━━━━━\n" +
   "📊 <b>Total Pooled Stock Available:</b> <b>" + total + " Accounts</b>\n\n" +
   "👇 <i>Claim an account now or invite friends to earn credits:</i>";
 

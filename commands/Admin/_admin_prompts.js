@@ -12,7 +12,7 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: /prompt_add_bal, /prompt_cut_bal, /prompt_ban, /prompt_suspend, /prompt_unsuspend, /prompt_clear_dev, /prompt_add_normal, /prompt_add_recovery, /prompt_add_2fa, /prompt_wipe_stock, /prompt_set_channel, /prompt_set_webapp, /prompt_set_support, /prompt_broadcast, /prompt_broadcast_pin, /prompt_inspect_refs, /prompt_set_price, /prompt_msg_user, /prompt_create_promo
+  aliases: /prompt_add_bal, /prompt_cut_bal, /prompt_ban, /prompt_suspend, /prompt_unsuspend, /prompt_clear_dev, /prompt_add_normal, /prompt_add_recovery, /prompt_add_2fa, /prompt_wipe_stock, /prompt_set_channel, /prompt_set_webapp, /prompt_set_support, /prompt_broadcast, /prompt_broadcast_pin, /prompt_inspect_refs, /prompt_msg_user, /prompt_create_promo
   group: 
 CMD*/
 

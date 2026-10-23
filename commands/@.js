@@ -201,7 +201,21 @@ if (user && user.telegramid) {
       if (isWaitingPromo) {
         User.setProperty("waiting_for_promo", false, "boolean");
       }
+      if (User.getProperty("waiting_for_price")) {
+        User.setProperty("waiting_for_price", null);
+      }
     } else {
+      // Admin Direct Price Input (when waiting_for_price is set)
+      if (isAdm) {
+        var waitPriceCat = User.getProperty("waiting_for_price");
+        if (waitPriceCat && /^[0-9]+$/.test(rawText)) {
+          var numVal = parseInt(rawText);
+          User.setProperty("waiting_for_price", null);
+          Bot.runCommand("/prompt_set_price set " + waitPriceCat + " " + numVal);
+          return;
+        }
+      }
+
       // Direct "promo <code>" command without slash (e.g. "promo BONUS1")
       if (rawText.toLowerCase().indexOf("promo ") === 0) {
         User.setProperty("waiting_for_promo", false, "boolean");
