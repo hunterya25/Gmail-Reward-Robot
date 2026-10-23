@@ -48,11 +48,43 @@ try {
 var uRefs = Bot.getProperty("total_referrals_" + targetId) || 0;
 var uDev = Bot.getProperty("UserDevice_" + targetId) || "Not Detected / Cleared";
 var uIp = Bot.getProperty("UserIp_" + targetId) || "Not Detected";
-var isBanned = Bot.getProperty("ban_" + targetId) ? "⛔ BANNED" : "✅ ACTIVE";
+
+// Ban evaluation
+var isBannedProp = Bot.getProperty("ban_" + targetId);
+var bannedList = Bot.getProperty("BannedUsersList") || [];
+var isTargetBanned = (isBannedProp === true || isBannedProp === "true");
+for (var b = 0; b < bannedList.length; b++) {
+  if (bannedList[b] && bannedList[b].toString() === targetId.toString()) {
+    isTargetBanned = true;
+    break;
+  }
+}
+if (isBannedProp === false || isBannedProp === "false") {
+  isTargetBanned = false;
+}
+
+// Suspension evaluation
+var suspData = Bot.getProperty("SuspendedUser_" + targetId);
+var isTargetSuspended = false;
+var suspInfo = "";
+if (suspData && suspData.suspended_until) {
+  var now = Date.now();
+  if (now < suspData.suspended_until) {
+    isTargetSuspended = true;
+    suspInfo = "⏳ SUSPENDED (Until: " + suspData.unban_at_ist + ")";
+  }
+}
+
+var statusStr = "✅ ACTIVE";
+if (isTargetBanned) {
+  statusStr = "⛔ PERMANENTLY BANNED";
+} else if (isTargetSuspended) {
+  statusStr = suspInfo;
+}
 
 var profileText = "👤 <b>User Deep Profile Inspection</b> 🔍\n\n" +
   "• 🆔 <b>Telegram ID:</b> <code>" + targetId + "</code>\n" +
-  "• 🔒 <b>Account Status:</b> " + isBanned + "\n" +
+  "• 🔒 <b>Account Status:</b> <b>" + statusStr + "</b>\n" +
   "• 💰 <b>Current Balance:</b> <b>" + uBal + " Credits</b>\n" +
   "• 👥 <b>Verified Referrals:</b> <b>" + uRefs + "</b>\n" +
   "• 📱 <b>Hardware Device:</b>\n<code>" + uDev + "</code>\n" +
@@ -60,14 +92,26 @@ var profileText = "👤 <b>User Deep Profile Inspection</b> 🔍\n\n" +
   "━━━━━━━━━━━━━━━━━━━━\n" +
   "👇 <i>Quick administration actions for this user:</i>";
 
+var banBtn = isTargetBanned
+  ? { text: "🔓 Unban User", callback_data: "/unban " + targetId }
+  : { text: "⛔ Ban User", callback_data: "/ban " + targetId };
+
+var suspBtn = isTargetSuspended
+  ? { text: "🔓 Lift Suspension", callback_data: "/unsuspend " + targetId }
+  : { text: "⏳ Suspend User", callback_data: "/prompt_suspend" };
+
 var kbd = [
   [
     { text: "➕ Add Balance", callback_data: "/add_bal " + targetId + " 1" },
     { text: "➖ Cut Balance", callback_data: "/cut_bal " + targetId + " 1" }
   ],
   [
+    banBtn,
+    suspBtn
+  ],
+  [
     { text: "📱 Reset Device", callback_data: "/clear_device " + targetId },
-    { text: "⛔ Ban / Unban", callback_data: "/ban " + targetId }
+    { text: "✉️ Send Message", callback_data: "/prompt_msg_user" }
   ],
   [{ text: "🔙 Back to Users Division", callback_data: "/admin_users" }]
 ];

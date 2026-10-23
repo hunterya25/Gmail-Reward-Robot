@@ -22,9 +22,70 @@ try {
   var channelUrl = "https://t.me/BotsByAntares";
   var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
-  // 0. Strict Maintenance Mode Gate
+  // 0. Strict Gate Check (_is_gate_blocked, Ban, Suspension, Maintenance)
+  if (User.getProperty("_is_gate_blocked")) {
+    return;
+  }
+
   var adm = Bot.getProperty("adminID");
   var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
+
+  // Strict Ban Check
+  var isBannedProp = Bot.getProperty("ban_" + user.telegramid);
+  var bannedList = Bot.getProperty("BannedUsersList") || [];
+  var isUserBanned = false;
+  if (isBannedProp === true || isBannedProp === "true") isUserBanned = true;
+  for (var b = 0; b < bannedList.length; b++) {
+    if (bannedList[b] && bannedList[b].toString() === user.telegramid.toString()) {
+      isUserBanned = true;
+      break;
+    }
+  }
+  if (isBannedProp === false || isBannedProp === "false" || isBannedProp === null || isBannedProp === "null" || isBannedProp === undefined) {
+    var inBList = false;
+    for (var b2 = 0; b2 < bannedList.length; b2++) {
+      if (bannedList[b2] && bannedList[b2].toString() === user.telegramid.toString()) {
+        inBList = true;
+        break;
+      }
+    }
+    if (!inBList) isUserBanned = false;
+  }
+  if (isUserBanned && !isAdm) {
+    Bot.sendMessage("⛔️ <b>Access Denied: You are permanently banned from @GmailRewardRobot.</b>", { parse_mode: "HTML" });
+    return;
+  }
+
+  // Strict Suspension Check
+  var suspData = Bot.getProperty("SuspendedUser_" + user.telegramid);
+  if (suspData && !isAdm) {
+    var nowMs = Date.now();
+    if (nowMs >= suspData.suspended_until) {
+      Bot.setProperty("SuspendedUser_" + user.telegramid, null);
+    } else {
+      var remMs = suspData.suspended_until - nowMs;
+      var remMins = Math.ceil(remMs / 60000);
+      var remH = Math.floor(remMins / 60);
+      var remM = remMins % 60;
+      var remDisplay = "";
+      if (remH > 0) remDisplay += remH + "h ";
+      remDisplay += remM + "m (" + remMins + " Minutes)";
+
+      var suspNotice = "⛔ <b>Account Temporarily Suspended!</b> ⏳\n\n" +
+        "Aapka account access @GmailRewardRobot par temporary suspend kar diya gaya hai.\n\n" +
+        "⚠️ <b>Kyu suspend hua (Reason):</b>\n<i>" + suspData.reason + "</i>\n\n" +
+        "━━━━━━━━━━━━━━━━━━━━\n" +
+        "⏱️ <b>Suspension Duration:</b> <b>" + suspData.duration + "</b>\n" +
+        "📅 <b>Kab theek hoga (IST Date & Time):</b>\n<b>" + suspData.unban_at_ist + "</b>\n" +
+        "⏳ <b>Kitna time bacha hai:</b> <b>" + remDisplay + "</b>\n\n" +
+        "━━━━━━━━━━━━━━━━━━━━\n" +
+        "<i>💡 Time pura hote hi aapka account automatically unlock ho jayega!</i>";
+      Bot.sendMessage(suspNotice, { parse_mode: "HTML" });
+      return;
+    }
+  }
+
+  // Strict Maintenance Mode Gate
   if (Bot.getProperty("maintenance_mode") && !isAdm) {
     var maintText = "🚧 <b>System Under Maintenance!</b> 🛠️\n\n" +
       "Our engineers are currently upgrading the bot servers and stocking up fresh Gmails.\n\n" +

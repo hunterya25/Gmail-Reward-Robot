@@ -12,7 +12,7 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: /prompt_add_bal, /prompt_cut_bal, /prompt_ban, /prompt_clear_dev, /prompt_add_normal, /prompt_add_recovery, /prompt_add_2fa, /prompt_wipe_stock, /prompt_set_channel, /prompt_set_webapp, /prompt_set_support, /prompt_broadcast, /prompt_broadcast_pin, /prompt_inspect_refs, /prompt_set_price, /prompt_msg_user, /prompt_create_promo
+  aliases: /prompt_add_bal, /prompt_cut_bal, /prompt_ban, /prompt_suspend, /prompt_unsuspend, /prompt_clear_dev, /prompt_add_normal, /prompt_add_recovery, /prompt_add_2fa, /prompt_wipe_stock, /prompt_set_channel, /prompt_set_webapp, /prompt_set_support, /prompt_broadcast, /prompt_broadcast_pin, /prompt_inspect_refs, /prompt_set_price, /prompt_msg_user, /prompt_create_promo
   group: 
 CMD*/
 
@@ -44,7 +44,13 @@ if (cmd === "/prompt_user_info") {
   msg = "➖ <b>Deduct Credits from User:</b>\n\nSend command:\n<code>/cut_bal &lt;USER_ID&gt; &lt;AMOUNT&gt;</code>\n\n<i>Example:</i> <code>/cut_bal 8669173066 2</code>";
   backCmd = "/admin_users";
 } else if (cmd === "/prompt_ban") {
-  msg = "⛔ <b>Ban / Unban User:</b>\n\nSend command:\n<code>/ban &lt;USER_ID&gt;</code> — To ban user\n<code>/unban &lt;USER_ID&gt;</code> — To unban user";
+  msg = "⛔ <b>Ban / Unban User:</b>\n\nSend command:\n<code>/ban &lt;USER_ID&gt; [reason]</code> — To permanently ban\n<code>/unban &lt;USER_ID&gt;</code> — To unban\n\n<i>Example:</i> <code>/ban 8669173066 Multi-account cheating</code>\n<code>/unban 8669173066</code>";
+  backCmd = "/admin_users";
+} else if (cmd === "/prompt_suspend") {
+  msg = "⏳ <b>Suspend User Temporarily:</b>\n\nSend command:\n<code>/suspend &lt;USER_ID&gt; &lt;TIME&gt; &lt;REASON&gt;</code>\n\n<b>Supported Time Formats:</b>\n• <code>2h</code> (2 Hours)\n• <code>30m</code> (30 Minutes)\n• <code>1h30m</code> or <code>1h 30m</code> (1 Hour 30 Minutes)\n• <code>24h</code> (24 Hours)\n\n<i>Example:</i>\n<code>/suspend 8669173066 2h Multi-account self referral attempt</code>\n<code>/suspend 8669173066 1h 30m Suspicious device activity</code>\n\n<i>💡 Note: The user receives a notice in IST date & time with the exact reason. When the duration finishes, the account unlocks automatically!</i>";
+  backCmd = "/admin_users";
+} else if (cmd === "/prompt_unsuspend") {
+  msg = "🔓 <b>Lift User Suspension Early:</b>\n\nSend command:\n<code>/unsuspend &lt;USER_ID&gt;</code>\n\n<i>Example:</i> <code>/unsuspend 8669173066</code>";
   backCmd = "/admin_users";
 } else if (cmd === "/prompt_clear_dev") {
   msg = "📱 <b>Reset Device / User Registry:</b>\n\nSend command:\n<code>/clear_device &lt;DEV_ID/USER_ID&gt;</code>\n\n<i>Example:</i> <code>/clear_device DEV_1601A022615DE</code>";

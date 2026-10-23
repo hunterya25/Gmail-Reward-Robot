@@ -18,6 +18,10 @@ CMD*/
 
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
+if (User.getProperty("_is_gate_blocked")) {
+  return;
+}
+
 // 0. Maintenance Mode Check
 var adm = Bot.getProperty("adminID");
 var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
