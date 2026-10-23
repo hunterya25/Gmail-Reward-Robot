@@ -127,6 +127,63 @@ if (!userMails || !Array.isArray(userMails)) { userMails = []; }
 userMails.unshift(claimedItem);
 User.setProperty("MyClaimedGmails", userMails, "json");
 
+// 🔔 Notify Admin about Claimed Gmail (With Masked Dots for Privacy)
+var adm = Bot.getProperty("adminID");
+if (adm) {
+  function maskEmail(email) {
+    if (!email || typeof email !== "string") return "••••••••";
+    var p = email.split("@");
+    if (p.length < 2) return "••••••••";
+    var n = p[0];
+    var d = p[1];
+    if (n.length <= 2) return n[0] + "••••••@" + d;
+    return n.substring(0, 2) + "••••••" + n.substring(n.length - 1) + "@" + d;
+  }
+
+  function maskSecret(str) {
+    if (!str || typeof str !== "string") return "••••••••";
+    return "••••••••••••";
+  }
+
+  var maskedEmail = maskEmail(claimedItem.email);
+  var maskedPass = maskSecret(claimedItem.password);
+  var uName = (user.first_name || "") + " " + (user.last_name || "");
+  uName = uName.trim() || "User";
+  var uHandle = user.username ? "@" + user.username : "None";
+
+  var adminClaimNotice = "📬 <b>GMAIL ACCOUNT CLAIMED!</b> 💎\n\n" +
+    "• 👤 <b>Claimed By:</b> " + uName + " (" + uHandle + ")\n" +
+    "• 🆔 <b>User ID:</b> <code>" + user.telegramid + "</code>\n" +
+    "• 🏷️ <b>Category:</b> <b>Normal Fresh Gmail</b>\n" +
+    "• 💰 <b>Price:</b> <b>1 Credit</b>\n" +
+    "• 💵 <b>Remaining Balance:</b> <b>" + remBalance + " Credits</b>\n" +
+    "• 📦 <b>Remaining Stock:</b> <b>" + (gmailStock ? gmailStock.length : 0) + " accounts</b>\n\n" +
+    "━━━━━━━━━━━━━━━━━━━━\n" +
+    "🔒 <b>Delivered Credentials (Masked with Dots for Privacy):</b>\n" +
+    "📧 <b>Gmail:</b> <code>" + maskedEmail + "</code>\n" +
+    "🔑 <b>Password:</b> <code>" + maskedPass + "</code>\n";
+
+  if (claimedItem.recovery) {
+    adminClaimNotice += "🛡️ <b>Recovery:</b> <code>" + maskEmail(claimedItem.recovery) + "</code>\n";
+  }
+
+  adminClaimNotice += "\n📅 <b>Time (IST):</b> <code>" + nowTime + "</code>";
+
+  try {
+    Api.sendMessage({
+      chat_id: adm,
+      text: adminClaimNotice,
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔍 Inspect User", callback_data: "/user_info " + user.telegramid }],
+          [{ text: "📦 Stock Manager", callback_data: "/admin_stock" }]
+        ]
+      }
+    });
+  } catch (e) {}
+}
+
 var successDispenseText = "🎉 <b>Congratulations! Fresh Gmail Claimed</b> 📬\n\n" +
   "Here are your account credentials (tap to copy):\n\n" +
   "📧 <b>Email:</b>\n<code>" + claimedItem.email + "</code>\n\n" +

@@ -198,6 +198,56 @@ try {
       fullUsers.push(user.telegramid);
       Bot.setProperty("all_bot_users", fullUsers, "json");
       User.setProperty("registered", true, "boolean");
+
+      // 🔔 Notify Admin about New User Registration
+      var adminTarget = Bot.getProperty("adminID");
+      if (adminTarget && user.telegramid.toString() !== adminTarget.toString()) {
+        function getISTNow() {
+          var d = new Date();
+          var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+          var istDate = new Date(utc + (3600000 * 5.5));
+          var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          var day = istDate.getDate();
+          var month = months[istDate.getMonth()];
+          var year = istDate.getFullYear();
+          var h = istDate.getHours();
+          var m = istDate.getMinutes();
+          var ampm = h >= 12 ? "PM" : "AM";
+          h = h % 12;
+          h = h ? h : 12;
+          var strM = m < 10 ? "0" + m : m;
+          var strH = h < 10 ? "0" + h : h;
+          return day + " " + month + " " + year + " at " + strH + ":" + strM + " " + ampm + " IST";
+        }
+
+        var uName = (user.first_name || "") + " " + (user.last_name || "");
+        uName = uName.trim() || "User";
+        var uHandle = user.username ? "@" + user.username : "None";
+        var uRefBy = rawParams ? rawParams.replace(/^ref/i, "").replace(/^user/i, "").trim() : "";
+        var refText = uRefBy ? "<code>" + uRefBy + "</code>" : "Direct (No Referrer)";
+
+        var newRegMsg = "👤 <b>NEW USER REGISTERED!</b> 🚀\n\n" +
+          "• 🆔 <b>Telegram ID:</b> <code>" + user.telegramid + "</code>\n" +
+          "• 👤 <b>Name:</b> " + uName + "\n" +
+          "• 🌐 <b>Username:</b> " + uHandle + "\n" +
+          "• 🔗 <b>Referred By:</b> " + refText + "\n" +
+          "• 📊 <b>Total Bot Users:</b> <b>" + fullUsers.length + "</b>\n" +
+          "• 📅 <b>Time (IST):</b> <code>" + getISTNow() + "</code>\n\n" +
+          "⚡ <i>Action: Tap below to inspect profile</i>";
+
+        try {
+          Api.sendMessage({
+            chat_id: adminTarget,
+            text: newRegMsg,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "🔍 Inspect Profile", callback_data: "/user_info " + user.telegramid }]
+              ]
+            }
+          });
+        } catch (e) {}
+      }
     }
   }
 
