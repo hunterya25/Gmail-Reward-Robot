@@ -49,7 +49,6 @@ if (user && user.telegramid) {
   }
 
   if (isUserBanned && !isAdm) {
-    User.setProperty("_is_gate_blocked", true, "boolean");
     Bot.sendMessage("⛔️ <b>Access Denied: You are permanently banned from @GmailRewardRobot.</b>", { parse_mode: "HTML" });
     return;
   }
@@ -69,9 +68,7 @@ if (user && user.telegramid) {
         }
       }
       Bot.setProperty("SuspendedUsersList", cleanSList, "json");
-      User.setProperty("_is_gate_blocked", false, "boolean");
     } else {
-      User.setProperty("_is_gate_blocked", true, "boolean");
       var remMs = suspData.suspended_until - nowMs;
       var remMins = Math.ceil(remMs / 60000);
       var remH = Math.floor(remMins / 60);
@@ -98,16 +95,12 @@ if (user && user.telegramid) {
   // 2. 🚧 Maintenance Mode Enforcement
   var isMaintenance = Bot.getProperty("maintenance_mode");
   if (isMaintenance && !isAdm) {
-    User.setProperty("_is_gate_blocked", true, "boolean");
     var maintText = "🚧 <b>System Under Maintenance!</b> 🛠️\n\n" +
       "Our engineers are currently upgrading the bot servers and stocking up fresh Gmails.\n\n" +
       "⏱️ <i>All services will be back online shortly. Thank you for your patience!</i>";
     Bot.sendMessage(maintText, { parse_mode: "HTML" });
     return;
   }
-
-  // Clear gate block for normal operational flow
-  User.setProperty("_is_gate_blocked", false, "boolean");
 
   // 3. 📢 Real-Time Channel Leave Enforcement
   var targetChannel = Bot.getProperty("mandatory_channel", "@BotsByAntares");

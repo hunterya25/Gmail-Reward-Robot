@@ -18,10 +18,6 @@ CMD*/
 
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
-if (User.getProperty("_is_gate_blocked")) {
-  return;
-}
-
 if (request && request.id) {
   Api.answerCallbackQuery({
     callback_query_id: request.id,

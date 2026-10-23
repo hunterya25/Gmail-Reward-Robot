@@ -18,10 +18,6 @@ CMD*/
 
 var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
-if (User.getProperty("_is_gate_blocked")) {
-  return;
-}
-
 if (request && request.message && request.message.message_id) {
   try {
     Api.deleteMessage({ chat_id: chatId, message_id: request.message.message_id });

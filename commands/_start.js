@@ -22,11 +22,6 @@ try {
   var channelUrl = "https://t.me/BotsByAntares";
   var chatId = (chat && chat.chatid) ? chat.chatid : (user ? user.telegramid : null);
 
-  // 0. Strict Gate Check (_is_gate_blocked, Ban, Suspension, Maintenance)
-  if (User.getProperty("_is_gate_blocked")) {
-    return;
-  }
-
   var adm = Bot.getProperty("adminID");
   var isAdm = (adm && user && user.telegramid.toString() === adm.toString());
 

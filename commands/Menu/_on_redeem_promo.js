@@ -1,7 +1,7 @@
 /*CMD
   command: /on_redeem_promo
   help: 
-  need_reply: true
+  need_reply: false
   auto_retry_time: 
   folder: Menu
 
