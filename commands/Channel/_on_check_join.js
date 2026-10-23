@@ -22,7 +22,7 @@ if (!options || !options.result) {
   Api.sendMessage({
     chat_id: chatId,
     text: "⚠️ <b>Unable to verify membership at this moment.</b> Please try clicking Verify again.",
-    parse_mode: "html"
+    parse_mode: "HTML"
   });
   return;
 }
@@ -69,7 +69,7 @@ if (isJoined) {
       chat_id: chatId,
       message_id: request.message.message_id,
       text: failText,
-      parse_mode: "html",
+      parse_mode: "HTML",
       disable_web_page_preview: true,
       reply_markup: { inline_keyboard: keyboard }
     });
@@ -77,7 +77,7 @@ if (isJoined) {
     Api.sendMessage({
       chat_id: chatId,
       text: failText,
-      parse_mode: "html",
+      parse_mode: "HTML",
       disable_web_page_preview: true,
       reply_markup: { inline_keyboard: keyboard }
     });

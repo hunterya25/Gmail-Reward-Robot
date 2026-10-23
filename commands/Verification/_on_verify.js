@@ -106,7 +106,7 @@ if (isDuplicate) {
     "✅ <b>You can still use this bot!</b>\n" +
     "You have full access to explore the bot and invite your own real friends from unique devices to earn Gmail accounts!";
 
-  Bot.sendMessage(failMsg, { parse_mode: "html" });
+  Bot.sendMessage(failMsg, { parse_mode: "HTML" });
 
   // Notify referrer that duplicate device was rejected
   if (pendingRef && user && pendingRef.toString() !== user.telegramid.toString()) {
@@ -117,7 +117,7 @@ if (isDuplicate) {
         "👤 <b>User:</b> " + inviterName + " (<code>" + user.telegramid + "</code>)\n" +
         "❌ <b>Result:</b> <b>Duplicate Device / Second Account Detected!</b>\n\n" +
         "<i>Our anti-cheat system blocked referral credits for this registration because the device was already used before. Only unique real devices earn rewards!</i>",
-      parse_mode: "html"
+      parse_mode: "HTML"
     });
   }
 
@@ -143,7 +143,7 @@ if (isDuplicate) {
     "✅ <b>Integrity Status:</b> <b>Authentic Unique Device</b>\n\n" +
     "<i>Your account is now fully activated with full reward privileges!</i>";
 
-  Bot.sendMessage(successMsg, { parse_mode: "html" });
+  Bot.sendMessage(successMsg, { parse_mode: "HTML" });
 
   // Process Referral Attribution for genuine user
   if (pendingRef && user && pendingRef.toString() !== user.telegramid.toString()) {
@@ -208,7 +208,7 @@ if (isDuplicate) {
         "🛡️ <b>Anti-Cheat:</b> ✅ Unique Device Verified\n" +
         "🎁 <b>Reward:</b> <b>+1 Gmail Credit added to your balance!</b>\n\n" +
         "💰 <b>Your Current Balance: " + currentRefBal + " Credits</b>",
-      parse_mode: "html",
+      parse_mode: "HTML",
       disable_web_page_preview: true
     });
 

@@ -18,7 +18,7 @@ CMD*/
 
 var adm = Bot.getProperty("adminID");
 if (user.telegramid != adm) {
-  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "html" });
+  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "HTML" });
   return;
 }
 
@@ -30,7 +30,7 @@ if (!newUrl && message && message.indexOf("/set_webapp") === 0) {
 if (!newUrl || newUrl.indexOf("http") !== 0) {
   Bot.sendMessage(
     "⚠️ <b>Invalid URL!</b>\n\nUsage: <code>/set_webapp https://your-domain.com/webapp</code>",
-    { parse_mode: "html" }
+    { parse_mode: "HTML" }
   );
   return;
 }
@@ -40,5 +40,5 @@ Bot.setProperty("mini_app_url", newUrl, "string");
 Bot.sendMessage(
   "✅ <b>Verification Mini App URL Updated!</b>\n\n" +
   "🌐 <b>Active URL:</b>\n<code>" + newUrl + "</code>",
-  { parse_mode: "html" }
+  { parse_mode: "HTML" }
 );

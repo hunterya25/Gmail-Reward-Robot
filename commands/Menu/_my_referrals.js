@@ -33,7 +33,7 @@ if (!refList || !Array.isArray(refList) || refList.length === 0) {
   Api.sendMessage({
     chat_id: chatId,
     text: emptyMsg,
-    parse_mode: "html",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: kbd }
   });
   return;
@@ -64,6 +64,6 @@ var kbd = [
 Api.sendMessage({
   chat_id: chatId,
   text: msg,
-  parse_mode: "html",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: kbd }
 });

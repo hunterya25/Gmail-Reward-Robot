@@ -78,7 +78,7 @@ try {
     Api.sendMessage({
       chat_id: chatId,
       text: welcomeText,
-      parse_mode: "html",
+      parse_mode: "HTML",
       disable_web_page_preview: true,
       reply_markup: { inline_keyboard: keyboard }
     });
@@ -127,5 +127,5 @@ try {
   );
 
 } catch (err) {
-  Bot.sendMessage("⚠️ <b>System Error in /start:</b> " + err, { parse_mode: "html" });
+  Bot.sendMessage("⚠️ <b>System Error in /start:</b> " + err, { parse_mode: "HTML" });
 }

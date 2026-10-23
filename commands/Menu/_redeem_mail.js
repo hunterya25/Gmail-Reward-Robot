@@ -49,7 +49,7 @@ if (currentBalance < 1) {
   Api.sendMessage({
     chat_id: chatId,
     text: needMoreText,
-    parse_mode: "html",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: kbd }
   });
   return;
@@ -62,14 +62,14 @@ if (!gmailStock || !Array.isArray(gmailStock) || gmailStock.length === 0) {
     Api.sendMessage({
       chat_id: adm,
       text: "🚨 <b>ALERT: Gmail Stock Depleted!</b>\n\nUser @" + (user.username || user.telegramid) + " tried to claim a Gmail, but stock is empty!\n\n_Use /add_gmail in Admin Panel to upload new accounts._",
-      parse_mode: "html"
+      parse_mode: "HTML"
     });
   }
 
   Api.sendMessage({
     chat_id: chatId,
     text: "⚠️ <b>Stock Currently Depleted!</b>\n\nAll pre-loaded Gmail accounts have been claimed. Our administrators have been alerted to restock immediately.\n\n<i>Note: No credits were deducted from your balance. Please try claiming again shortly!</i>",
-    parse_mode: "html"
+    parse_mode: "HTML"
   });
   return;
 }
@@ -115,6 +115,6 @@ var kbd = [
 Api.sendMessage({
   chat_id: chatId,
   text: successDispenseText,
-  parse_mode: "html",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: kbd }
 });

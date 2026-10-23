@@ -1,5 +1,5 @@
 /*CMD
-  command: 👥 Refer & Earn
+  command: /refer
   help: 
   need_reply: false
   auto_retry_time: 
@@ -12,7 +12,7 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: Refer Earn, Refer & Earn, 🤝 Refer & Earn, /refer
+  aliases: 👥 Refer & Earn, Refer Earn, Refer & Earn, 🤝 Refer & Earn, 👥 refer & earn
   group: 
 CMD*/
 
@@ -66,7 +66,7 @@ var keyboard = [
 Api.sendMessage({
   chat_id: chatId,
   text: referText,
-  parse_mode: "html",
+  parse_mode: "HTML",
   disable_web_page_preview: true,
   reply_markup: { inline_keyboard: keyboard }
 });

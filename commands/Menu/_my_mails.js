@@ -33,7 +33,7 @@ if (!userMails || !Array.isArray(userMails) || userMails.length === 0) {
   Api.sendMessage({
     chat_id: chatId,
     text: emptyText,
-    parse_mode: "html",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: kbd }
   });
   return;
@@ -58,6 +58,6 @@ var kbd = [[{ text: "🔙 Return to Menu", callback_data: "/start" }]];
 Api.sendMessage({
   chat_id: chatId,
   text: msg,
-  parse_mode: "html",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: kbd }
 });

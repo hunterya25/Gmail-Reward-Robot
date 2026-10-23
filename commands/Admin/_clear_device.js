@@ -18,7 +18,7 @@ CMD*/
 
 var adm = Bot.getProperty("adminID");
 if (user.telegramid != adm) {
-  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "html" });
+  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "HTML" });
   return;
 }
 
@@ -28,10 +28,10 @@ if (!devId && message && message.indexOf("/clear_device") === 0) {
 }
 
 if (!devId) {
-  Bot.sendMessage("ℹ️ <b>Usage:</b> <code>/clear_device DEV_XXXXX</code>", { parse_mode: "html" });
+  Bot.sendMessage("ℹ️ <b>Usage:</b> <code>/clear_device DEV_XXXXX</code>", { parse_mode: "HTML" });
   return;
 }
 
 Bot.setProperty("DeviceOwner_" + devId, null);
 
-Bot.sendMessage("✅ <b>Device Unbound!</b> Device ID <code>" + devId + "</code> has been cleared from anti-cheat registry for testing.", { parse_mode: "html" });
+Bot.sendMessage("✅ <b>Device Unbound!</b> Device ID <code>" + devId + "</code> has been cleared from anti-cheat registry for testing.", { parse_mode: "HTML" });

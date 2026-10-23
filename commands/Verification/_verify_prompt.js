@@ -44,7 +44,7 @@ var keyboard = [
 Api.sendMessage({
   chat_id: chatId,
   text: promptText,
-  parse_mode: "html",
+  parse_mode: "HTML",
   disable_web_page_preview: true,
   reply_markup: { inline_keyboard: keyboard }
 });

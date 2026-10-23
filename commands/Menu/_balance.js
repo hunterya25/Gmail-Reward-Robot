@@ -1,5 +1,5 @@
 /*CMD
-  command: 💰 Balance
+  command: /balance
   help: 
   need_reply: false
   auto_retry_time: 
@@ -12,7 +12,7 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: Balance, /balance
+  aliases: 💰 Balance, Balance, 💰 balance
   group: 
 CMD*/
 
@@ -59,6 +59,6 @@ var keyboard = [
 Api.sendMessage({
   chat_id: chatId,
   text: balanceText,
-  parse_mode: "html",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyboard }
 });

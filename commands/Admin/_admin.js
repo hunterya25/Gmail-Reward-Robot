@@ -21,12 +21,12 @@ var adm = Bot.getProperty("adminID");
 if (!adm) {
   // First time setup: allow current user to claim admin
   Bot.setProperty("adminID", user.telegramid, "integer");
-  Bot.sendMessage("👑 <b>Admin access configured for user ID: " + user.telegramid + "</b>", { parse_mode: "html" });
+  Bot.sendMessage("👑 <b>Admin access configured for user ID: " + user.telegramid + "</b>", { parse_mode: "HTML" });
   adm = user.telegramid;
 }
 
 if (user.telegramid != adm) {
-  Bot.sendMessage("⛔️ <b>Unauthorized: Admin access only!</b>", { parse_mode: "html" });
+  Bot.sendMessage("⛔️ <b>Unauthorized: Admin access only!</b>", { parse_mode: "HTML" });
   return;
 }
 
@@ -58,7 +58,7 @@ var kbd = [
 
 Api.sendMessage({
   text: adminPanelText,
-  parse_mode: "html",
+  parse_mode: "HTML",
   disable_web_page_preview: true,
   reply_markup: { inline_keyboard: kbd }
 });

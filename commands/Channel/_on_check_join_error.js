@@ -35,7 +35,7 @@ if (request && request.message && request.message.message_id) {
     chat_id: chatId,
     message_id: request.message.message_id,
     text: errPrompt,
-    parse_mode: "html",
+    parse_mode: "HTML",
     disable_web_page_preview: true,
     reply_markup: { inline_keyboard: keyboard }
   });
@@ -43,7 +43,7 @@ if (request && request.message && request.message.message_id) {
   Api.sendMessage({
     chat_id: chatId,
     text: errPrompt,
-    parse_mode: "html",
+    parse_mode: "HTML",
     disable_web_page_preview: true,
     reply_markup: { inline_keyboard: keyboard }
   });

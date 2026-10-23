@@ -1,5 +1,5 @@
 /*CMD
-  command: 📧 GetMail
+  command: /getmail
   help: 
   need_reply: false
   auto_retry_time: 
@@ -12,7 +12,7 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: GetMail, /getmail
+  aliases: 📧 GetMail, GetMail, 📧 getmail
   group: 
 CMD*/
 
@@ -59,6 +59,6 @@ keyboard.push([{ text: "📜 View My Claimed Accounts (" + claimedCount + ")", c
 Api.sendMessage({
   chat_id: chatId,
   text: mailText,
-  parse_mode: "html",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyboard }
 });

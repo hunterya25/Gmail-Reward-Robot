@@ -18,7 +18,7 @@ CMD*/
 
 var adm = Bot.getProperty("adminID");
 if (user.telegramid != adm) {
-  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "html" });
+  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "HTML" });
   return;
 }
 
@@ -35,7 +35,7 @@ if (!text) {
     "<code>/add_gmail\n" +
     "user1@gmail.com:pass1:rec1@mail.com\n" +
     "user2@gmail.com:pass2:rec2@mail.com</code>",
-    { parse_mode: "html" }
+    { parse_mode: "HTML" }
   );
   return;
 }
@@ -69,5 +69,5 @@ Bot.setProperty("GmailStock", currentStock, "json");
 Bot.sendMessage(
   "✅ <b>Successfully Added " + addedCount + " Gmail Account(s) to Stock!</b>\n\n" +
   "📦 <b>Total Active Stock:</b> <b>" + currentStock.length + " Accounts</b>",
-  { parse_mode: "html" }
+  { parse_mode: "HTML" }
 );

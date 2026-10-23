@@ -19,7 +19,7 @@ CMD*/
 var existingAdmin = Bot.getProperty("adminID");
 
 if (existingAdmin && user.telegramid.toString() !== existingAdmin.toString()) {
-  Bot.sendMessage("⛔️ <b>Access Denied!</b> Admin ID is already configured. Only the current admin can change this setting.", { parse_mode: "html" });
+  Bot.sendMessage("⛔️ <b>Access Denied!</b> Admin ID is already configured. Only the current admin can change this setting.", { parse_mode: "HTML" });
   return;
 }
 
@@ -31,5 +31,5 @@ Bot.sendMessage(
   "✅ <b>Admin Configured Successfully!</b> 👑\n\n" +
   "🆔 <b>Admin ID:</b> <code>" + newAdminId + "</code>\n\n" +
   "You can now run <code>/admin</code> to open the Management Dashboard.",
-  { parse_mode: "html" }
+  { parse_mode: "HTML" }
 );

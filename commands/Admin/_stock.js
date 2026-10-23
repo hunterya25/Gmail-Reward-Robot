@@ -18,7 +18,7 @@ CMD*/
 
 var adm = Bot.getProperty("adminID");
 if (user.telegramid != adm) {
-  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "html" });
+  Bot.sendMessage("⛔️ <b>Unauthorized.</b>", { parse_mode: "HTML" });
   return;
 }
 
@@ -28,7 +28,7 @@ if (request && request.id) {
 
 var currentStock = Bot.getProperty("GmailStock", []);
 if (!currentStock || currentStock.length === 0) {
-  Bot.sendMessage("📦 <b>Current Gmail Stock: 0 Accounts</b>\n\nUse <code>/add_gmail email:pass:recovery</code> to load stock.", { parse_mode: "html" });
+  Bot.sendMessage("📦 <b>Current Gmail Stock: 0 Accounts</b>\n\nUse <code>/add_gmail email:pass:recovery</code> to load stock.", { parse_mode: "HTML" });
   return;
 }
 
@@ -44,4 +44,4 @@ if (currentStock.length > 15) {
   msg += "\n<i>...and " + (currentStock.length - 15) + " more accounts in pool.</i>";
 }
 
-Bot.sendMessage(msg, { parse_mode: "html" });
+Bot.sendMessage(msg, { parse_mode: "HTML" });
